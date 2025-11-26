@@ -104,7 +104,7 @@
   <h1>Controle de Recibos</h1>
   <p class="descricao">
     Sistema online: tudo que qualquer pessoa cadastrar aqui fica salvo no mesmo banco
-    e aparece para todos que abrirem o link.
+    e aparece para todos que abrirem o link. O número do recibo é gerado automaticamente.
   </p>
 
   <div class="secao-titulo">Incluir novo recibo</div>
@@ -131,12 +131,9 @@
       <label for="valor">Valor (R$)</label>
       <input type="number" id="valor" step="0.01" min="0" required>
     </div>
-    <div class="campo">
-      <label for="numero">Nº do recibo</label>
-      <input type="text" id="numero" required>
-    </div>
+    <!-- Número do recibo agora é automático, não aparece no formulário -->
     <div class="linha-botao-form">
-      <button type="submit" class="btn-primario">Adicionar recibo</button>
+      <button type="submit" id="btnPrincipal" class="btn-primario">Adicionar recibo</button>
     </div>
   </form>
 
@@ -183,22 +180,20 @@
   </div>
 </div>
 
-<!-- Script como módulo para usar Firebase v9+ -->
 <script type="module">
-  // ====== IMPORTS DO FIREBASE (CDN) ======
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
   import {
     getFirestore,
     collection,
     addDoc,
     deleteDoc,
+    updateDoc,
     doc,
     onSnapshot,
     query,
     orderBy
   } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-  // ====== SUA CONFIG DO FIREBASE ======
   const firebaseConfig = {
     apiKey: "AIzaSyB05L6llPbcNsJ_SfYn2mR31Cxx1M8dzH4",
     authDomain: "controle-recibos-f7538.firebaseapp.com",
@@ -215,6 +210,8 @@
 
   let recibos = [];
   let filtros = { texto: "", dataInicio: "", dataFim: "" };
+  let editingId = null;
+  let editingNumero = null;
 
   const form = document.getElementById("reciboForm");
   const tabelaBody = document.querySelector("#tabelaRecibos tbody");
@@ -225,6 +222,7 @@
   const inputDataInicio = document.getElementById("dataInicio");
   const inputDataFim = document.getElementById("dataFim");
   const inputCpf = document.getElementById("cpf");
+  const btnPrincipal = document.getElementById("btnPrincipal");
 
   function formatarDataBR(isoDate) {
     if (!isoDate) return "";
@@ -288,9 +286,17 @@
       row.insertCell(2).textContent = r.cpf;
       row.insertCell(3).textContent = r.servico;
       row.insertCell(4).textContent = formatarMoeda(r.valor);
-      row.insertCell(5).textContent = r.numero;
+      row.insertCell(5).textContent = r.numero ?? "";
 
       const celAcoes = row.insertCell(6);
+
+      const btnEditar = document.createElement("button");
+      btnEditar.textContent = "Editar";
+      btnEditar.className = "btn-secundario btn-pequeno";
+      btnEditar.style.marginRight = "4px";
+      btnEditar.onclick = () => iniciarEdicao(r);
+      celAcoes.appendChild(btnEditar);
+
       const btnRemover = document.createElement("button");
       btnRemover.textContent = "Remover";
       btnRemover.className = "btn-secundario btn-pequeno";
@@ -301,6 +307,19 @@
     const total = lista.reduce((s, r) => s + Number(r.valor), 0);
     totalRecibos.textContent = "Total: " + formatarMoeda(total);
     infoQuantidade.textContent = `Exibindo ${lista.length} recibo(s)`;
+  }
+
+  function iniciarEdicao(r) {
+    editingId = r.id;
+    editingNumero = r.numero ?? null;
+
+    document.getElementById("data").value = r.data;
+    document.getElementById("paciente").value = r.paciente;
+    inputCpf.value = r.cpf;
+    document.getElementById("servico").value = r.servico;
+    document.getElementById("valor").value = r.valor;
+
+    btnPrincipal.textContent = "Salvar alterações";
   }
 
   window.aplicarFiltros = function () {
@@ -330,9 +349,8 @@
     const cpf = inputCpf.value.trim();
     const servico = document.getElementById("servico").value.trim();
     const valorStr = document.getElementById("valor").value;
-    const numero = document.getElementById("numero").value.trim();
 
-    if (!data || !paciente || !cpf || !servico || !valorStr || !numero) {
+    if (!data || !paciente || !cpf || !servico || !valorStr) {
       mensagemErro.textContent = "Preencha todos os campos.";
       return;
     }
@@ -347,15 +365,37 @@
     }
 
     try {
-      await addDoc(colRecibos, {
-        data,
-        paciente,
-        cpf,
-        servico,
-        valor,
-        numero
-      });
+      if (editingId) {
+        await updateDoc(doc(db, "recibos", editingId), {
+          data,
+          paciente,
+          cpf,
+          servico,
+          valor,
+          numero: editingNumero
+        });
+      } else {
+        const maxNumero = recibos.reduce((max, r) => {
+          const n = parseInt(r.numero, 10);
+          if (isNaN(n)) return max;
+          return n > max ? n : max;
+        }, 0);
+        const novoNumero = String(maxNumero + 1).padStart(2, "0");
+
+        await addDoc(colRecibos, {
+          data,
+          paciente,
+          cpf,
+          servico,
+          valor,
+          numero: novoNumero
+        });
+      }
+
       form.reset();
+      editingId = null;
+      editingNumero = null;
+      btnPrincipal.textContent = "Adicionar recibo";
     } catch (err) {
       console.error(err);
       mensagemErro.textContent = "Erro ao salvar recibo. Tente novamente.";
@@ -380,7 +420,7 @@
     }
     let csv = "Data,Paciente,CPF,Serviço,Valor,Nº Recibo\n";
     lista.forEach(r => {
-      csv += `"${formatarDataBR(r.data)}","${r.paciente}","${r.cpf}","${r.servico}","${formatarMoeda(r.valor)}","${r.numero}"\n`;
+      csv += `"${formatarDataBR(r.data)}","${r.paciente}","${r.cpf}","${r.servico}","${formatarMoeda(r.valor)}","${r.numero ?? ""}"\n`;
     });
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
@@ -393,4 +433,5 @@
 </script>
 </body>
 </html>
+
 
