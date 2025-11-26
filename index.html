@@ -51,7 +51,11 @@
       box-shadow: 0 0 0 1px var(--cor-primaria-clara);
       outline: none;
     }
-    .linha-botao-form { display: flex; align-items: flex-end; }
+    .linha-botoes-form {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
     button {
       border-radius: 6px;
       border: none;
@@ -131,9 +135,11 @@
       <label for="valor">Valor (R$)</label>
       <input type="number" id="valor" step="0.01" min="0" required>
     </div>
-    <!-- Número do recibo agora é automático, não aparece no formulário -->
-    <div class="linha-botao-form">
+    <div class="linha-botoes-form">
       <button type="submit" id="btnPrincipal" class="btn-primario">Adicionar recibo</button>
+      <button type="button" id="btnCancelarEdicao" class="btn-secundario" style="display:none;">
+        Cancelar edição
+      </button>
     </div>
   </form>
 
@@ -210,6 +216,7 @@
 
   let recibos = [];
   let filtros = { texto: "", dataInicio: "", dataFim: "" };
+  let consultaAtiva = false;   // só mostra tabela depois da consulta
   let editingId = null;
   let editingNumero = null;
 
@@ -223,6 +230,7 @@
   const inputDataFim = document.getElementById("dataFim");
   const inputCpf = document.getElementById("cpf");
   const btnPrincipal = document.getElementById("btnPrincipal");
+  const btnCancelarEdicao = document.getElementById("btnCancelarEdicao");
 
   function formatarDataBR(isoDate) {
     if (!isoDate) return "";
@@ -239,6 +247,7 @@
     return regex.test(cpf);
   }
 
+  // máscara CPF
   inputCpf.addEventListener("input", function () {
     let v = this.value.replace(/\D/g, "");
     if (v.length > 11) v = v.slice(0, 11);
@@ -276,6 +285,14 @@
   }
 
   function renderTabela() {
+    // Se a consulta NÃO estiver ativa, não mostra nenhum recibo
+    if (!consultaAtiva) {
+      tabelaBody.innerHTML = "";
+      infoQuantidade.textContent = "Nenhum recibo exibido. Use a busca e clique em Filtrar.";
+      totalRecibos.textContent = "Total: R$ 0,00";
+      return;
+    }
+
     tabelaBody.innerHTML = "";
     const lista = getRecibosFiltrados();
 
@@ -320,24 +337,42 @@
     document.getElementById("valor").value = r.valor;
 
     btnPrincipal.textContent = "Salvar alterações";
+    btnCancelarEdicao.style.display = "inline-block";
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
+
+  function cancelarEdicao() {
+    editingId = null;
+    editingNumero = null;
+    form.reset();
+    mensagemErro.textContent = "";
+    btnPrincipal.textContent = "Adicionar recibo";
+    btnCancelarEdicao.style.display = "none";
+  }
+
+  btnCancelarEdicao.addEventListener("click", cancelarEdicao);
 
   window.aplicarFiltros = function () {
     filtros.texto = inputBuscaTexto.value.trim().toLowerCase();
     filtros.dataInicio = inputDataInicio.value;
     filtros.dataFim = inputDataFim.value;
+    consultaAtiva = true;
     renderTabela();
   };
+
   window.limparFiltros = function () {
     filtros = { texto: "", dataInicio: "", dataFim: "" };
     inputBuscaTexto.value = "";
     inputDataInicio.value = "";
     inputDataFim.value = "";
+    consultaAtiva = false;
     renderTabela();
   };
+
   inputBuscaTexto.addEventListener("input", () => {
     filtros.texto = inputBuscaTexto.value.trim().toLowerCase();
-    renderTabela();
+    if (consultaAtiva) renderTabela();
   });
 
   form.addEventListener("submit", async (e) => {
@@ -392,10 +427,7 @@
         });
       }
 
-      form.reset();
-      editingId = null;
-      editingNumero = null;
-      btnPrincipal.textContent = "Adicionar recibo";
+      cancelarEdicao(); // limpa formulário e volta para modo "adicionar"
     } catch (err) {
       console.error(err);
       mensagemErro.textContent = "Erro ao salvar recibo. Tente novamente.";
@@ -413,9 +445,9 @@
   }
 
   window.exportarExcel = function () {
-    const lista = getRecibosFiltrados();
+    const lista = consultaAtiva ? getRecibosFiltrados() : [];
     if (lista.length === 0) {
-      alert("Nenhum recibo para exportar.");
+      alert("Nenhum recibo para exportar. Faça uma consulta primeiro.");
       return;
     }
     let csv = "Data,Paciente,CPF,Serviço,Valor,Nº Recibo\n";
@@ -430,8 +462,12 @@
     link.click();
     document.body.removeChild(link);
   };
+
+  // ao carregar a página: não mostra nenhum recibo até consultar
+  renderTabela();
 </script>
 </body>
 </html>
+
 
 
