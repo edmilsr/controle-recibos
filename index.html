@@ -1,533 +1,396 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Controle de Recibos</title>
-    <style>
-        :root {
-            --cor-primaria: #2563eb;
-            --cor-primaria-clara: #dbeafe;
-            --cor-borda: #e5e7eb;
-            --cor-texto: #111827;
-            --cor-texto-sec: #4b5563;
-            --cor-erro: #dc2626;
-            --cor-fundo: #f9fafb;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: var(--cor-fundo);
-            color: var(--cor-texto);
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            background: #fff;
-            padding: 20px 24px 30px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-        }
-
-        h1 {
-            margin-top: 0;
-            font-size: 24px;
-            color: var(--cor-texto);
-        }
-
-        .descricao {
-            margin-top: 4px;
-            margin-bottom: 16px;
-            font-size: 14px;
-            color: var(--cor-texto-sec);
-        }
-
-        .secao-titulo {
-            margin-top: 20px;
-            margin-bottom: 8px;
-            font-size: 16px;
-            font-weight: bold;
-        }
-
-        /* Formulário */
-        form {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 12px 16px;
-            margin-bottom: 12px;
-        }
-
-        .campo {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            font-size: 13px;
-        }
-
-        label {
-            font-weight: 600;
-            color: var(--cor-texto-sec);
-        }
-
-        input {
-            padding: 7px 9px;
-            font-size: 14px;
-            border-radius: 6px;
-            border: 1px solid var(--cor-borda);
-            outline: none;
-        }
-
-        input:focus {
-            border-color: var(--cor-primaria);
-            box-shadow: 0 0 0 1px var(--cor-primaria-clara);
-        }
-
-        .linha-botao-form {
-            display: flex;
-            align-items: flex-end;
-        }
-
-        button {
-            border-radius: 6px;
-            border: none;
-            padding: 8px 14px;
-            font-size: 14px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .btn-primario {
-            background: var(--cor-primaria);
-            color: #fff;
-        }
-
-        .btn-primario:hover {
-            filter: brightness(0.95);
-        }
-
-        .btn-secundario {
-            background: #fff;
-            color: var(--cor-texto);
-            border: 1px solid var(--cor-borda);
-        }
-
-        .btn-secundario:hover {
-            background: var(--cor-fundo);
-        }
-
-        .btn-pequeno {
-            padding: 4px 8px;
-            font-size: 12px;
-        }
-
-        .erro {
-            color: var(--cor-erro);
-            font-size: 13px;
-            margin-bottom: 4px;
-        }
-
-        /* Filtros */
-        .filtros {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr auto auto;
-            gap: 8px;
-            align-items: end;
-            margin-top: 8px;
-            margin-bottom: 10px;
-        }
-
-        .filtros input {
-            font-size: 13px;
-            padding: 6px 8px;
-        }
-
-        /* Tabela */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            font-size: 13px;
-        }
-
-        th, td {
-            border: 1px solid var(--cor-borda);
-            padding: 6px 8px;
-            text-align: left;
-        }
-
-        th {
-            background: var(--cor-primaria-clara);
-            font-weight: 600;
-        }
-
-        tbody tr:nth-child(even) {
-            background: #f9fafb;
-        }
-
-        .acoes {
-            margin-top: 12px;
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .total {
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .badge-qtd {
-            font-size: 12px;
-            color: var(--cor-texto-sec);
-        }
-
-        @media (max-width: 800px) {
-            form {
-                grid-template-columns: 1fr 1fr;
-            }
-            .filtros {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        @media (max-width: 600px) {
-            form, .filtros {
-                grid-template-columns: 1fr;
-            }
-        }
-
-    </style>
+  <meta charset="UTF-8">
+  <title>Controle de Recibos</title>
+  <style>
+    :root {
+      --cor-primaria: #2563eb;
+      --cor-primaria-clara: #dbeafe;
+      --cor-borda: #e5e7eb;
+      --cor-texto: #111827;
+      --cor-texto-sec: #4b5563;
+      --cor-erro: #dc2626;
+      --cor-fundo: #f9fafb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: var(--cor-fundo);
+      color: var(--cor-texto);
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px 24px 30px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    }
+    h1 { margin-top: 0; font-size: 24px; }
+    .descricao { margin: 4px 0 16px; font-size: 14px; color: var(--cor-texto-sec); }
+    .secao-titulo { margin: 20px 0 8px; font-size: 16px; font-weight: bold; }
+    form {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 12px 16px;
+      margin-bottom: 12px;
+    }
+    .campo { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+    label { font-weight: 600; color: var(--cor-texto-sec); }
+    input {
+      padding: 7px 9px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid var(--cor-borda);
+    }
+    input:focus {
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 1px var(--cor-primaria-clara);
+      outline: none;
+    }
+    .linha-botao-form { display: flex; align-items: flex-end; }
+    button {
+      border-radius: 6px;
+      border: none;
+      padding: 8px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-primario { background: var(--cor-primaria); color: #fff; }
+    .btn-primario:hover { filter: brightness(0.95); }
+    .btn-secundario {
+      background: #fff;
+      color: var(--cor-texto);
+      border: 1px solid var(--cor-borda);
+    }
+    .btn-secundario:hover { background: var(--cor-fundo); }
+    .btn-pequeno { padding: 4px 8px; font-size: 12px; }
+    .erro { color: var(--cor-erro); font-size: 13px; margin-bottom: 4px; }
+    .filtros {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto auto;
+      gap: 8px;
+      align-items: end;
+      margin: 8px 0 10px;
+    }
+    .filtros input { font-size: 13px; padding: 6px 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+    th, td { border: 1px solid var(--cor-borda); padding: 6px 8px; text-align: left; }
+    th { background: var(--cor-primaria-clara); font-weight: 600; }
+    tbody tr:nth-child(even) { background: #f9fafb; }
+    .acoes { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .total { font-weight: bold; font-size: 14px; }
+    .badge-qtd { font-size: 12px; color: var(--cor-texto-sec); }
+    @media (max-width: 800px) {
+      form { grid-template-columns: 1fr 1fr; }
+      .filtros { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      form, .filtros { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 <div class="container">
-    <h1>Controle de Recibos</h1>
-    <p class="descricao">
-        Sistema simples para <strong>inclusão</strong> e <strong>consulta</strong> de recibos.
-        Os dados ficam salvos neste navegador (localStorage).
-    </p>
+  <h1>Controle de Recibos</h1>
+  <p class="descricao">
+    Sistema online: tudo que qualquer pessoa cadastrar aqui fica salvo no mesmo banco
+    e aparece para todos que abrirem o link.
+  </p>
 
-    <!-- Inclusão -->
-    <div class="secao-titulo">Incluir novo recibo</div>
-    <p id="mensagemErro" class="erro"></p>
+  <div class="secao-titulo">Incluir novo recibo</div>
+  <p id="mensagemErro" class="erro"></p>
 
-    <form id="reciboForm">
-        <div class="campo">
-            <label for="data">Data</label>
-            <input type="date" id="data" required>
-        </div>
-        <div class="campo">
-            <label for="paciente">Nome do paciente</label>
-            <input type="text" id="paciente" required>
-        </div>
-        <div class="campo">
-            <label for="cpf">CPF (000.000.000-00)</label>
-            <input type="text" id="cpf" maxlength="14" required>
-        </div>
-        <div class="campo">
-            <label for="servico">Serviço prestado</label>
-            <input type="text" id="servico" required>
-        </div>
-        <div class="campo">
-            <label for="valor">Valor (R$)</label>
-            <input type="number" id="valor" step="0.01" min="0" required>
-        </div>
-        <div class="campo">
-            <label for="numero">Nº do recibo</label>
-            <input type="text" id="numero" required>
-        </div>
-        <div class="linha-botao-form">
-            <button type="submit" class="btn-primario">Adicionar recibo</button>
-        </div>
-    </form>
-
-    <!-- Consulta -->
-    <div class="secao-titulo">Consultar recibos</div>
-    <div class="filtros">
-        <div class="campo">
-            <label for="buscaTexto">Texto (paciente, CPF, serviço, nº)</label>
-            <input type="text" id="buscaTexto" placeholder="Digite para pesquisar...">
-        </div>
-        <div class="campo">
-            <label for="dataInicio">Data inicial</label>
-            <input type="date" id="dataInicio">
-        </div>
-        <div class="campo">
-            <label for="dataFim">Data final</label>
-            <input type="date" id="dataFim">
-        </div>
-        <button type="button" class="btn-secundario" onclick="aplicarFiltros()">Filtrar</button>
-        <button type="button" class="btn-secundario" onclick="limparFiltros()">Limpar filtros</button>
+  <form id="reciboForm">
+    <div class="campo">
+      <label for="data">Data</label>
+      <input type="date" id="data" required>
     </div>
-
-    <table id="tabelaRecibos">
-        <thead>
-        <tr>
-            <th>Data</th>
-            <th>Paciente</th>
-            <th>CPF</th>
-            <th>Serviço</th>
-            <th>Valor</th>
-            <th>Nº Recibo</th>
-            <th>Ações</th>
-        </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-
-    <div class="acoes">
-        <span id="infoQuantidade" class="badge-qtd"></span>
-        <span id="totalRecibos" class="total">Total: R$ 0,00</span>
+    <div class="campo">
+      <label for="paciente">Nome do paciente</label>
+      <input type="text" id="paciente" required>
     </div>
-
-    <div class="acoes" style="margin-top: 8px;">
-        <button type="button" class="btn-secundario" onclick="exportarExcel()">Exportar (CSV / Excel)</button>
-        <!-- Botão de apagar todos foi removido -->
+    <div class="campo">
+      <label for="cpf">CPF (000.000.000-00)</label>
+      <input type="text" id="cpf" maxlength="14" required>
     </div>
+    <div class="campo">
+      <label for="servico">Serviço prestado</label>
+      <input type="text" id="servico" required>
+    </div>
+    <div class="campo">
+      <label for="valor">Valor (R$)</label>
+      <input type="number" id="valor" step="0.01" min="0" required>
+    </div>
+    <div class="campo">
+      <label for="numero">Nº do recibo</label>
+      <input type="text" id="numero" required>
+    </div>
+    <div class="linha-botao-form">
+      <button type="submit" class="btn-primario">Adicionar recibo</button>
+    </div>
+  </form>
+
+  <div class="secao-titulo">Consultar recibos</div>
+  <div class="filtros">
+    <div class="campo">
+      <label for="buscaTexto">Texto (paciente, CPF, serviço, nº)</label>
+      <input type="text" id="buscaTexto" placeholder="Digite para pesquisar...">
+    </div>
+    <div class="campo">
+      <label for="dataInicio">Data inicial</label>
+      <input type="date" id="dataInicio">
+    </div>
+    <div class="campo">
+      <label for="dataFim">Data final</label>
+      <input type="date" id="dataFim">
+    </div>
+    <button type="button" class="btn-secundario" onclick="aplicarFiltros()">Filtrar</button>
+    <button type="button" class="btn-secundario" onclick="limparFiltros()">Limpar filtros</button>
+  </div>
+
+  <table id="tabelaRecibos">
+    <thead>
+    <tr>
+      <th>Data</th>
+      <th>Paciente</th>
+      <th>CPF</th>
+      <th>Serviço</th>
+      <th>Valor</th>
+      <th>Nº Recibo</th>
+      <th>Ações</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="acoes">
+    <span id="infoQuantidade" class="badge-qtd"></span>
+    <span id="totalRecibos" class="total">Total: R$ 0,00</span>
+  </div>
+
+  <div class="acoes" style="margin-top: 8px;">
+    <button type="button" class="btn-secundario" onclick="exportarExcel()">Exportar (CSV / Excel)</button>
+  </div>
 </div>
 
-<script>
-    "use strict";
+<!-- Script como módulo para usar Firebase v9+ -->
+<script type="module">
+  // ====== IMPORTS DO FIREBASE (CDN) ======
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    deleteDoc,
+    doc,
+    onSnapshot,
+    query,
+    orderBy
+  } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    // Estado principal
-    let recibos = [];
-    let filtros = {
-        texto: "",
-        dataInicio: "",
-        dataFim: ""
-    };
+  // ====== SUA CONFIG DO FIREBASE ======
+  const firebaseConfig = {
+    apiKey: "AIzaSyB05L6llPbcNsJ_SfYn2mR31Cxx1M8dzH4",
+    authDomain: "controle-recibos-f7538.firebaseapp.com",
+    projectId: "controle-recibos-f7538",
+    storageBucket: "controle-recibos-f7538.firebasestorage.app",
+    messagingSenderId: "534095829056",
+    appId: "1:534095829056:web:2dc78d02815585817227a5",
+    measurementId: "G-DWZJTQ03S2"
+  };
 
-    // Elementos
-    const form = document.getElementById("reciboForm");
-    const tabelaBody = document.querySelector("#tabelaRecibos tbody");
-    const mensagemErro = document.getElementById("mensagemErro");
-    const totalRecibos = document.getElementById("totalRecibos");
-    const infoQuantidade = document.getElementById("infoQuantidade");
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const colRecibos = collection(db, "recibos");
 
-    const inputBuscaTexto = document.getElementById("buscaTexto");
-    const inputDataInicio = document.getElementById("dataInicio");
-    const inputDataFim = document.getElementById("dataFim");
+  let recibos = [];
+  let filtros = { texto: "", dataInicio: "", dataFim: "" };
 
-    // ----- Utilitários -----
-    function formatarDataBR(isoDate) {
-        if (!isoDate) return "";
-        const [ano, mes, dia] = isoDate.split("-");
-        return `${dia}/${mes}/${ano}`;
+  const form = document.getElementById("reciboForm");
+  const tabelaBody = document.querySelector("#tabelaRecibos tbody");
+  const mensagemErro = document.getElementById("mensagemErro");
+  const totalRecibos = document.getElementById("totalRecibos");
+  const infoQuantidade = document.getElementById("infoQuantidade");
+  const inputBuscaTexto = document.getElementById("buscaTexto");
+  const inputDataInicio = document.getElementById("dataInicio");
+  const inputDataFim = document.getElementById("dataFim");
+  const inputCpf = document.getElementById("cpf");
+
+  function formatarDataBR(isoDate) {
+    if (!isoDate) return "";
+    const [ano, mes, dia] = isoDate.split("-");
+    return `${dia}/${mes}/${ano}`;
+  }
+  function formatarMoeda(valor) {
+    const numero = Number(valor);
+    if (isNaN(numero)) return "R$ 0,00";
+    return "R$ " + numero.toFixed(2).replace(".", ",");
+  }
+  function validarCPF(cpf) {
+    const regex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
+    return regex.test(cpf);
+  }
+
+  inputCpf.addEventListener("input", function () {
+    let v = this.value.replace(/\D/g, "");
+    if (v.length > 11) v = v.slice(0, 11);
+    if (v.length > 9) {
+      this.value = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+    } else if (v.length > 6) {
+      this.value = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3");
+    } else if (v.length > 3) {
+      this.value = v.replace(/(\d{3})(\d{1,3})/, "$1.$2");
+    } else {
+      this.value = v;
     }
+  });
 
-    function formatarMoeda(valor) {
-        const numero = Number(valor);
-        if (isNaN(numero)) return "R$ 0,00";
-        return "R$ " + numero.toFixed(2).replace(".", ",");
-    }
+  const q = query(colRecibos, orderBy("data", "desc"));
+  onSnapshot(q, (snapshot) => {
+    recibos = snapshot.docs.map(docSnap => ({
+      id: docSnap.id,
+      ...docSnap.data()
+    }));
+    renderTabela();
+  });
 
-    function validarCPF(cpf) {
-        const regex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
-        return regex.test(cpf);
-    }
+  function getRecibosFiltrados() {
+    return recibos.filter(r => {
+      if (filtros.texto) {
+        const texto = filtros.texto;
+        const alvo = (r.paciente + " " + r.cpf + " " + r.servico + " " + r.numero).toLowerCase();
+        if (!alvo.includes(texto)) return false;
+      }
+      if (filtros.dataInicio && r.data < filtros.dataInicio) return false;
+      if (filtros.dataFim && r.data > filtros.dataFim) return false;
+      return true;
+    });
+  }
 
-    // Máscara simples de CPF
-    document.getElementById("cpf").addEventListener("input", function () {
-        let v = this.value.replace(/\D/g, "");
-        if (v.length > 11) v = v.slice(0, 11);
-        if (v.length > 9) {
-            this.value = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
-        } else if (v.length > 6) {
-            this.value = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3");
-        } else if (v.length > 3) {
-            this.value = v.replace(/(\d{3})(\d{1,3})/, "$1.$2");
-        } else {
-            this.value = v;
-        }
+  function renderTabela() {
+    tabelaBody.innerHTML = "";
+    const lista = getRecibosFiltrados();
+
+    lista.forEach(r => {
+      const row = tabelaBody.insertRow();
+      row.insertCell(0).textContent = formatarDataBR(r.data);
+      row.insertCell(1).textContent = r.paciente;
+      row.insertCell(2).textContent = r.cpf;
+      row.insertCell(3).textContent = r.servico;
+      row.insertCell(4).textContent = formatarMoeda(r.valor);
+      row.insertCell(5).textContent = r.numero;
+
+      const celAcoes = row.insertCell(6);
+      const btnRemover = document.createElement("button");
+      btnRemover.textContent = "Remover";
+      btnRemover.className = "btn-secundario btn-pequeno";
+      btnRemover.onclick = () => removerRecibo(r.id);
+      celAcoes.appendChild(btnRemover);
     });
 
-    // ----- Persistência -----
-    function carregarRecibos() {
-        try {
-            const salvo = localStorage.getItem("recibos");
-            if (salvo) {
-                recibos = JSON.parse(salvo);
-            }
-        } catch (e) {
-            console.error("Erro ao carregar recibos:", e);
-            recibos = [];
-        }
-        renderTabela();
+    const total = lista.reduce((s, r) => s + Number(r.valor), 0);
+    totalRecibos.textContent = "Total: " + formatarMoeda(total);
+    infoQuantidade.textContent = `Exibindo ${lista.length} recibo(s)`;
+  }
+
+  window.aplicarFiltros = function () {
+    filtros.texto = inputBuscaTexto.value.trim().toLowerCase();
+    filtros.dataInicio = inputDataInicio.value;
+    filtros.dataFim = inputDataFim.value;
+    renderTabela();
+  };
+  window.limparFiltros = function () {
+    filtros = { texto: "", dataInicio: "", dataFim: "" };
+    inputBuscaTexto.value = "";
+    inputDataInicio.value = "";
+    inputDataFim.value = "";
+    renderTabela();
+  };
+  inputBuscaTexto.addEventListener("input", () => {
+    filtros.texto = inputBuscaTexto.value.trim().toLowerCase();
+    renderTabela();
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    mensagemErro.textContent = "";
+
+    const data = document.getElementById("data").value;
+    const paciente = document.getElementById("paciente").value.trim();
+    const cpf = inputCpf.value.trim();
+    const servico = document.getElementById("servico").value.trim();
+    const valorStr = document.getElementById("valor").value;
+    const numero = document.getElementById("numero").value.trim();
+
+    if (!data || !paciente || !cpf || !servico || !valorStr || !numero) {
+      mensagemErro.textContent = "Preencha todos os campos.";
+      return;
+    }
+    if (!validarCPF(cpf)) {
+      mensagemErro.textContent = "CPF inválido! Use o formato 000.000.000-00.";
+      return;
+    }
+    const valor = parseFloat(valorStr);
+    if (isNaN(valor) || valor < 0) {
+      mensagemErro.textContent = "Informe um valor válido.";
+      return;
     }
 
-    function salvarRecibos() {
-        localStorage.setItem("recibos", JSON.stringify(recibos));
+    try {
+      await addDoc(colRecibos, {
+        data,
+        paciente,
+        cpf,
+        servico,
+        valor,
+        numero
+      });
+      form.reset();
+    } catch (err) {
+      console.error(err);
+      mensagemErro.textContent = "Erro ao salvar recibo. Tente novamente.";
     }
+  });
 
-    // ----- Filtros e consulta -----
-    function aplicarFiltros() {
-        filtros.texto = inputBuscaTexto.value.trim().toLowerCase();
-        filtros.dataInicio = inputDataInicio.value;
-        filtros.dataFim = inputDataFim.value;
-        renderTabela();
+  async function removerRecibo(id) {
+    if (!confirm("Deseja realmente remover este recibo?")) return;
+    try {
+      await deleteDoc(doc(db, "recibos", id));
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao remover recibo.");
     }
+  }
 
-    function limparFiltros() {
-        filtros = { texto: "", dataInicio: "", dataFim: "" };
-        inputBuscaTexto.value = "";
-        inputDataInicio.value = "";
-        inputDataFim.value = "";
-        renderTabela();
+  window.exportarExcel = function () {
+    const lista = getRecibosFiltrados();
+    if (lista.length === 0) {
+      alert("Nenhum recibo para exportar.");
+      return;
     }
-
-    function getRecibosFiltrados() {
-        return recibos.filter(r => {
-            // Filtro texto (paciente, cpf, servico, numero)
-            if (filtros.texto) {
-                const texto = filtros.texto;
-                const alvo = (
-                    r.paciente + " " +
-                    r.cpf + " " +
-                    r.servico + " " +
-                    r.numero
-                ).toLowerCase();
-                if (!alvo.includes(texto)) return false;
-            }
-
-            // Filtro data início
-            if (filtros.dataInicio && r.data < filtros.dataInicio) {
-                return false;
-            }
-
-            // Filtro data fim
-            if (filtros.dataFim && r.data > filtros.dataFim) {
-                return false;
-            }
-
-            return true;
-        });
-    }
-
-    // ----- Renderização -----
-    function renderTabela() {
-        tabelaBody.innerHTML = "";
-
-        const lista = getRecibosFiltrados();
-
-        lista.forEach((r) => {
-            const row = tabelaBody.insertRow();
-            row.insertCell(0).textContent = formatarDataBR(r.data);
-            row.insertCell(1).textContent = r.paciente;
-            row.insertCell(2).textContent = r.cpf;
-            row.insertCell(3).textContent = r.servico;
-            row.insertCell(4).textContent = formatarMoeda(r.valor);
-            row.insertCell(5).textContent = r.numero;
-
-            const celAcoes = row.insertCell(6);
-            const btnRemover = document.createElement("button");
-            btnRemover.textContent = "Remover";
-            btnRemover.className = "btn-secundario btn-pequeno";
-            btnRemover.onclick = () => removerReciboPorId(r.id);
-            celAcoes.appendChild(btnRemover);
-        });
-
-        // Atualiza total e quantidade
-        const total = lista.reduce((soma, r) => soma + Number(r.valor), 0);
-        totalRecibos.textContent = "Total: " + formatarMoeda(total);
-        infoQuantidade.textContent = `Exibindo ${lista.length} de ${recibos.length} recibo(s)`;
-    }
-
-    // ----- Inclusão / Remoção -----
-    function gerarId() {
-        return Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
-    }
-
-    form.addEventListener("submit", function (e) {
-        e.preventDefault();
-        mensagemErro.textContent = "";
-
-        const data = document.getElementById("data").value;
-        const paciente = document.getElementById("paciente").value.trim();
-        const cpf = document.getElementById("cpf").value.trim();
-        const servico = document.getElementById("servico").value.trim();
-        const valorStr = document.getElementById("valor").value;
-        const numero = document.getElementById("numero").value.trim();
-
-        if (!data || !paciente || !cpf || !servico || !valorStr || !numero) {
-            mensagemErro.textContent = "Preencha todos os campos.";
-            return;
-        }
-
-        if (!validarCPF(cpf)) {
-            mensagemErro.textContent = "CPF inválido! Use o formato 000.000.000-00.";
-            return;
-        }
-
-        const valor = parseFloat(valorStr);
-        if (isNaN(valor) || valor < 0) {
-            mensagemErro.textContent = "Informe um valor válido.";
-            return;
-        }
-
-        const novoRecibo = {
-            id: gerarId(),
-            data,
-            paciente,
-            cpf,
-            servico,
-            valor,
-            numero
-        };
-
-        recibos.push(novoRecibo);
-        salvarRecibos();
-        renderTabela();
-        form.reset();
+    let csv = "Data,Paciente,CPF,Serviço,Valor,Nº Recibo\n";
+    lista.forEach(r => {
+      csv += `"${formatarDataBR(r.data)}","${r.paciente}","${r.cpf}","${r.servico}","${formatarMoeda(r.valor)}","${r.numero}"\n`;
     });
-
-    function removerReciboPorId(id) {
-        if (!confirm("Deseja realmente remover este recibo?")) return;
-        recibos = recibos.filter(r => r.id !== id);
-        salvarRecibos();
-        renderTabela();
-    }
-
-    // ----- Exportar -----
-    function exportarExcel() {
-        const lista = getRecibosFiltrados();
-        if (lista.length === 0) {
-            alert("Nenhum recibo para exportar.");
-            return;
-        }
-
-        let csv = "Data,Paciente,CPF,Serviço,Valor,Nº Recibo\n";
-        lista.forEach(r => {
-            csv += `"${formatarDataBR(r.data)}","${r.paciente}","${r.cpf}","${r.servico}","${formatarMoeda(r.valor)}","${r.numero}"\n`;
-        });
-
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "recibos.csv";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-
-    // Disponibiliza no escopo global para o HTML
-    window.aplicarFiltros = aplicarFiltros;
-    window.limparFiltros = limparFiltros;
-    window.exportarExcel = exportarExcel;
-
-    // Inicialização
-    carregarRecibos();
-
-    // Atualização em tempo real ao digitar no campo de busca
-    inputBuscaTexto.addEventListener("input", () => {
-        filtros.texto = inputBuscaTexto.value.trim().toLowerCase();
-        renderTabela();
-    });
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "recibos.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 </script>
 </body>
 </html>
+
