@@ -101,6 +101,47 @@
     @media (max-width: 600px) {
       form, .filtros { grid-template-columns: 1fr; }
     }
+
+    /* Área de impressão */
+    #area-impressao { display: none; }
+    .recibo {
+      width: 750px;
+      margin: 0 auto 24px;
+      padding: 20px 24px;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      font-size: 14px;
+      color: #111827;
+      background: #fff;
+    }
+    .recibo header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+    .recibo .titulo {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0;
+    }
+    .recibo .dados-clinica { color: var(--cor-texto-sec); font-size: 13px; margin-top: 4px; }
+    .recibo .numero { font-weight: 700; }
+    .recibo .linha-info { margin: 6px 0; }
+    .recibo .rotulo { font-weight: 600; }
+    .recibo .valor { font-size: 16px; font-weight: 700; }
+    .recibo .ass { margin-top: 28px; }
+    .recibo .traco { margin-top: 36px; border-top: 1px solid #d1d5db; padding-top: 6px; }
+    .recibo .data-local { margin-top: 10px; font-size: 13px; color: var(--cor-texto-sec); }
+    .recibo .tag { display: inline-block; background: var(--cor-primaria-clara); color: var(--cor-primaria); padding: 4px 8px; border-radius: 999px; font-size: 12px; }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .container { display: none !important; }
+      #area-impressao { display: block; padding: 10px 0; }
+      .recibo { page-break-after: always; box-shadow: none; }
+      .recibo:last-child { page-break-after: auto; }
+    }
   </style>
 </head>
 <body>
@@ -183,8 +224,11 @@
 
   <div class="acoes" style="margin-top: 8px;">
     <button type="button" class="btn-secundario" onclick="exportarExcel()">Exportar (CSV / Excel)</button>
+    <button type="button" class="btn-secundario" onclick="imprimirRecibosFiltrados()">Imprimir recibos filtrados</button>
   </div>
 </div>
+
+<div id="area-impressao"></div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
@@ -231,6 +275,7 @@
   const inputCpf = document.getElementById("cpf");
   const btnPrincipal = document.getElementById("btnPrincipal");
   const btnCancelarEdicao = document.getElementById("btnCancelarEdicao");
+  const areaImpressao = document.getElementById("area-impressao");
 
   function formatarDataBR(isoDate) {
     if (!isoDate) return "";
@@ -245,6 +290,41 @@
   function validarCPF(cpf) {
     const regex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
     return regex.test(cpf);
+  }
+
+  function gerarTemplateRecibo(dados) {
+    const dataBR = formatarDataBR(dados.data);
+    const hojeBR = new Date().toLocaleDateString("pt-BR");
+    const valorBR = formatarMoeda(dados.valor);
+    return `
+      <div class="recibo">
+        <header>
+          <div>
+            <p class="titulo">Recibo de Pagamento</p>
+            <p class="dados-clinica">Clínica / Profissional<br>Rua Exemplo, 123 - Cidade<br>Contato: (00) 0000-0000</p>
+          </div>
+          <div class="numero">Recibo nº ${dados.numero ?? "--"}</div>
+        </header>
+
+        <div class="linha-info"><span class="rotulo">Data do atendimento:</span> ${dataBR}</div>
+        <div class="linha-info"><span class="rotulo">Paciente:</span> ${dados.paciente}</div>
+        <div class="linha-info"><span class="rotulo">CPF:</span> ${dados.cpf}</div>
+        <div class="linha-info"><span class="rotulo">Serviço prestado:</span> ${dados.servico}</div>
+        <div class="linha-info valor"><span class="rotulo">Valor:</span> ${valorBR}</div>
+
+        <div class="data-local">Emitido em ${hojeBR}</div>
+        <div class="ass">
+          <div class="traco">Assinatura / Carimbo</div>
+        </div>
+        <div style="margin-top:12px; text-align:right;">
+          <span class="tag">Impressão gerada pelo sistema</span>
+        </div>
+      </div>
+    `;
+  }
+
+  function prepararImpressao(lista) {
+    areaImpressao.innerHTML = lista.map(gerarTemplateRecibo).join("");
   }
 
   // máscara CPF
@@ -319,6 +399,13 @@
       btnRemover.className = "btn-secundario btn-pequeno";
       btnRemover.onclick = () => removerRecibo(r.id);
       celAcoes.appendChild(btnRemover);
+
+      const btnImprimir = document.createElement("button");
+      btnImprimir.textContent = "Imprimir";
+      btnImprimir.className = "btn-secundario btn-pequeno";
+      btnImprimir.style.marginLeft = "4px";
+      btnImprimir.onclick = () => imprimirRecibo(r);
+      celAcoes.appendChild(btnImprimir);
     });
 
     const total = lista.reduce((s, r) => s + Number(r.valor), 0);
@@ -443,6 +530,25 @@
       alert("Erro ao remover recibo.");
     }
   }
+
+  window.imprimirRecibo = function (recibo) {
+    prepararImpressao([recibo]);
+    window.print();
+  };
+
+  window.imprimirRecibosFiltrados = function () {
+    if (!consultaAtiva) {
+      alert("Nenhum recibo exibido. Use a busca e clique em Filtrar primeiro.");
+      return;
+    }
+    const lista = getRecibosFiltrados();
+    if (lista.length === 0) {
+      alert("Nenhum recibo para imprimir com os filtros atuais.");
+      return;
+    }
+    prepararImpressao(lista);
+    window.print();
+  };
 
   window.exportarExcel = function () {
     const lista = consultaAtiva ? getRecibosFiltrados() : [];
