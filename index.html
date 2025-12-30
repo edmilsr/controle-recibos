@@ -1,177 +1,297 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Controle de Recibos</title>
   <style>
-    :root {
-      --cor-primaria: #2563eb;
-      --cor-primaria-clara: #dbeafe;
-      --cor-borda: #e5e7eb;
-      --cor-texto: #111827;
-      --cor-texto-sec: #4b5563;
-      --cor-erro: #dc2626;
-      --cor-fundo: #f9fafb;
+    :root{
+      --cor-primaria:#2563eb;
+      --cor-primaria-clara:#dbeafe;
+      --cor-borda:#e5e7eb;
+      --cor-texto:#111827;
+      --cor-texto-sec:#4b5563;
+      --cor-erro:#dc2626;
+      --cor-ok:#16a34a;
+      --cor-fundo:#f9fafb;
+      --cor-amarelo:#f59e0b;
     }
-    * { box-sizing: border-box; }
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: var(--cor-fundo);
-      color: var(--cor-texto);
+    *{box-sizing:border-box}
+    body{
+      font-family:Arial,sans-serif;
+      margin:0;
+      padding:20px;
+      background:var(--cor-fundo);
+      color:var(--cor-texto);
     }
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      background: #fff;
-      padding: 20px 24px 30px;
-      border-radius: 10px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    .container{
+      max-width:1100px;
+      margin:0 auto;
+      background:#fff;
+      padding:20px 24px 30px;
+      border-radius:10px;
+      box-shadow:0 10px 30px rgba(0,0,0,.06);
     }
-    h1 { margin-top: 0; font-size: 24px; }
-    .descricao { margin: 4px 0 16px; font-size: 14px; color: var(--cor-texto-sec); }
-    .secao-titulo { margin: 20px 0 8px; font-size: 16px; font-weight: bold; }
-    form {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
-      gap: 12px 16px;
-      margin-bottom: 12px;
+    h1{margin:0;font-size:24px}
+    .descricao{margin:6px 0 16px;font-size:14px;color:var(--cor-texto-sec);line-height:1.35}
+    .secao-titulo{margin:18px 0 8px;font-size:16px;font-weight:700}
+    .linha-topo{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;
     }
-    .campo { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
-    label { font-weight: 600; color: var(--cor-texto-sec); }
-    input {
-      padding: 7px 9px;
-      font-size: 14px;
-      border-radius: 6px;
-      border: 1px solid var(--cor-borda);
+    .topo-direita{
+      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
     }
-    input:focus {
-      border-color: var(--cor-primaria);
-      box-shadow: 0 0 0 1px var(--cor-primaria-clara);
-      outline: none;
+    .chip{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--cor-borda);
+      background:var(--cor-fundo);
+      color:var(--cor-texto-sec);
+      white-space:nowrap;
     }
-    .linha-botoes-form {
-      display: flex;
-      align-items: flex-end;
-      gap: 8px;
+    .chip.ok{border-color:#bbf7d0;background:#f0fdf4;color:#166534}
+    .chip.warn{border-color:#fde68a;background:#fffbeb;color:#92400e}
+    .chip.err{border-color:#fecaca;background:#fef2f2;color:#991b1b}
+
+    form{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px 16px;
+      margin-bottom:12px;
     }
-    button {
-      border-radius: 6px;
-      border: none;
-      padding: 8px 14px;
-      font-size: 14px;
-      cursor: pointer;
-      font-weight: 600;
+    .campo{display:flex;flex-direction:column;gap:4px;font-size:13px}
+    label{font-weight:600;color:var(--cor-texto-sec)}
+    input, textarea, select{
+      padding:7px 9px;
+      font-size:14px;
+      border-radius:6px;
+      border:1px solid var(--cor-borda);
     }
-    .btn-primario { background: var(--cor-primaria); color: #fff; }
-    .btn-primario:hover { filter: brightness(0.95); }
-    .btn-secundario {
-      background: #fff;
-      color: var(--cor-texto);
-      border: 1px solid var(--cor-borda);
+    input:focus, textarea:focus, select:focus{
+      border-color:var(--cor-primaria);
+      box-shadow:0 0 0 1px var(--cor-primaria-clara);
+      outline:none;
     }
-    .btn-secundario:hover { background: var(--cor-fundo); }
-    .btn-pequeno { padding: 4px 8px; font-size: 12px; }
-    .erro { color: var(--cor-erro); font-size: 13px; margin-bottom: 4px; }
-    .filtros {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr auto auto;
-      gap: 8px;
-      align-items: end;
-      margin: 8px 0 10px;
+    .linha-botoes-form{
+      display:flex;
+      align-items:flex-end;
+      gap:8px;
+      flex-wrap:wrap;
     }
-    .filtros input { font-size: 13px; padding: 6px 8px; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-      font-size: 13px;
+    button{
+      border-radius:6px;
+      border:none;
+      padding:8px 14px;
+      font-size:14px;
+      cursor:pointer;
+      font-weight:700;
     }
-    th, td { border: 1px solid var(--cor-borda); padding: 6px 8px; text-align: left; }
-    th { background: var(--cor-primaria-clara); font-weight: 600; }
-    tbody tr:nth-child(even) { background: #f9fafb; }
-    .acoes { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    .total { font-weight: bold; font-size: 14px; }
-    .badge-qtd { font-size: 12px; color: var(--cor-texto-sec); }
-    @media (max-width: 800px) {
-      form { grid-template-columns: 1fr 1fr; }
-      .filtros { grid-template-columns: 1fr 1fr; }
+    button:disabled{opacity:.6;cursor:not-allowed}
+    .btn-primario{background:var(--cor-primaria);color:#fff}
+    .btn-primario:hover{filter:brightness(.95)}
+    .btn-secundario{
+      background:#fff;color:var(--cor-texto);
+      border:1px solid var(--cor-borda);
     }
-    @media (max-width: 600px) {
-      form, .filtros { grid-template-columns: 1fr; }
+    .btn-secundario:hover{background:var(--cor-fundo)}
+    .btn-alerta{
+      background:#fff;color:#991b1b;border:1px solid #fecaca;
+    }
+    .btn-alerta:hover{background:#fef2f2}
+    .btn-pequeno{padding:4px 8px;font-size:12px}
+
+    .mensagens{
+      display:flex; flex-direction:column; gap:6px;
+      margin:8px 0 8px;
+      min-height:18px;
+    }
+    .msg{font-size:13px}
+    .msg.erro{color:var(--cor-erro)}
+    .msg.ok{color:var(--cor-ok)}
+    .msg.aviso{color:#92400e}
+
+    .filtros{
+      display:grid;
+      grid-template-columns:2fr 1fr 1fr auto auto;
+      gap:8px;
+      align-items:end;
+      margin:8px 0 10px;
+    }
+    .filtros input{font-size:13px;padding:6px 8px}
+    .hint{
+      font-size:12px;color:var(--cor-texto-sec);margin-top:2px;
+    }
+
+    table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+    th,td{border:1px solid var(--cor-borda);padding:6px 8px;text-align:left;vertical-align:top}
+    th{background:var(--cor-primaria-clara);font-weight:700}
+    tbody tr:nth-child(even){background:#f9fafb}
+    .acoes{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .total{font-weight:800;font-size:14px}
+    .badge-qtd{font-size:12px;color:var(--cor-texto-sec)}
+    .mini{font-size:12px;color:var(--cor-texto-sec)}
+    .nowrap{white-space:nowrap}
+
+    /* Modal simples */
+    .modal-backdrop{
+      position:fixed; inset:0;
+      background:rgba(17,24,39,.55);
+      display:none; align-items:center; justify-content:center;
+      padding:18px; z-index:9999;
+    }
+    .modal{
+      width:min(920px, 100%);
+      background:#fff;
+      border-radius:12px;
+      box-shadow:0 18px 60px rgba(0,0,0,.25);
+      overflow:hidden;
+    }
+    .modal-header{
+      padding:12px 14px;
+      background:var(--cor-fundo);
+      border-bottom:1px solid var(--cor-borda);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .modal-header h2{margin:0;font-size:16px}
+    .modal-body{padding:14px}
+    .modal-footer{
+      padding:12px 14px;
+      border-top:1px solid var(--cor-borda);
+      display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap;
+    }
+    .recibo-print{
+      border:1px dashed var(--cor-borda);
+      border-radius:10px;
+      padding:14px;
+    }
+    .recibo-print .linha{
+      display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
+      margin:6px 0;
+    }
+    .recibo-print .titulo{
+      font-weight:800; font-size:16px; margin-bottom:8px;
+    }
+    .recibo-print .assinatura{
+      margin-top:18px;
+      display:flex; justify-content:flex-end;
+    }
+    .recibo-print .assinatura .linha-ass{
+      width:260px; border-top:1px solid var(--cor-texto); margin-top:30px;
+      text-align:center; padding-top:6px; font-size:12px;
+    }
+
+    @media (max-width:800px){
+      form{grid-template-columns:1fr 1fr}
+      .filtros{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width:600px){
+      form,.filtros{grid-template-columns:1fr}
+    }
+
+    @media print{
+      body{background:#fff;padding:0}
+      .container{box-shadow:none;border-radius:0;max-width:none;padding:0}
+      .nao-imprimir{display:none !important}
+      .modal-backdrop{position:static;display:block !important;background:transparent;padding:0}
+      .modal{box-shadow:none;border-radius:0}
+      .modal-header,.modal-footer{display:none}
+      .modal-body{padding:0}
+      .recibo-print{border:none}
     }
   </style>
 </head>
+
 <body>
 <div class="container">
-  <h1>Controle de Recibos</h1>
-  <p class="descricao">
-    Sistema online: tudo que qualquer pessoa cadastrar aqui fica salvo no mesmo banco
-    e aparece para todos que abrirem o link. O número do recibo é gerado automaticamente.
-  </p>
+  <div class="linha-topo">
+    <div>
+      <h1>Controle de Recibos</h1>
+      <p class="descricao">
+        ✅ Melhorias: número do recibo <b>atômico</b> (sem duplicar), validação de CPF (dígitos),
+        exportação CSV compatível com Excel, consulta só exibe após Filtrar, busca com debounce,
+        botão Ver/Imprimir e UX mais segura.
+        <br><span class="mini">Obs.: regras do Firestore (segurança) precisam ser configuradas no console — este HTML melhora muito, mas regras são o que realmente protegem.</span>
+      </p>
+    </div>
+    <div class="topo-direita nao-imprimir">
+      <span id="chipStatus" class="chip warn">Status: carregando…</span>
+      <button type="button" class="btn-secundario" id="btnRecarregar">Recarregar</button>
+    </div>
+  </div>
 
   <div class="secao-titulo">Incluir novo recibo</div>
-  <p id="mensagemErro" class="erro"></p>
 
-  <form id="reciboForm">
+  <div class="mensagens">
+    <div id="msgErro" class="msg erro"></div>
+    <div id="msgOk" class="msg ok"></div>
+    <div id="msgAviso" class="msg aviso"></div>
+  </div>
+
+  <form id="reciboForm" class="nao-imprimir">
     <div class="campo">
       <label for="data">Data</label>
-      <input type="date" id="data" required>
+      <input type="date" id="data" required />
     </div>
+
     <div class="campo">
       <label for="paciente">Nome do paciente</label>
-      <input type="text" id="paciente" required>
+      <input type="text" id="paciente" required />
     </div>
+
     <div class="campo">
       <label for="cpf">CPF (000.000.000-00)</label>
-      <input type="text" id="cpf" maxlength="14" required>
+      <input type="text" id="cpf" maxlength="14" required />
+      <div class="hint">Validação completa (dígitos verificadores).</div>
     </div>
+
     <div class="campo">
       <label for="servico">Serviço prestado</label>
-      <input type="text" id="servico" required>
+      <input type="text" id="servico" required />
     </div>
+
     <div class="campo">
       <label for="valor">Valor (R$)</label>
-      <input type="number" id="valor" step="0.01" min="0" required>
+      <input type="text" id="valor" inputmode="decimal" placeholder="Ex.: 150,00" required />
+      <div class="hint">Aceita vírgula ou ponto. Salva como número.</div>
     </div>
+
     <div class="linha-botoes-form">
       <button type="submit" id="btnPrincipal" class="btn-primario">Adicionar recibo</button>
-      <button type="button" id="btnCancelarEdicao" class="btn-secundario" style="display:none;">
-        Cancelar edição
-      </button>
+      <button type="button" id="btnCancelarEdicao" class="btn-secundario" style="display:none;">Cancelar edição</button>
     </div>
   </form>
 
   <div class="secao-titulo">Consultar recibos</div>
-  <div class="filtros">
+  <div class="filtros nao-imprimir">
     <div class="campo">
       <label for="buscaTexto">Texto (paciente, CPF, serviço, nº)</label>
-      <input type="text" id="buscaTexto" placeholder="Digite para pesquisar...">
+      <input type="text" id="buscaTexto" placeholder="Digite para pesquisar..." />
+      <div class="hint">Busca com atraso (debounce) para ficar leve.</div>
     </div>
     <div class="campo">
       <label for="dataInicio">Data inicial</label>
-      <input type="date" id="dataInicio">
+      <input type="date" id="dataInicio" />
     </div>
     <div class="campo">
       <label for="dataFim">Data final</label>
-      <input type="date" id="dataFim">
+      <input type="date" id="dataFim" />
     </div>
-    <button type="button" class="btn-secundario" onclick="aplicarFiltros()">Filtrar</button>
-    <button type="button" class="btn-secundario" onclick="limparFiltros()">Limpar filtros</button>
+    <button type="button" class="btn-secundario" id="btnFiltrar">Filtrar</button>
+    <button type="button" class="btn-secundario" id="btnLimpar">Limpar filtros</button>
   </div>
 
   <table id="tabelaRecibos">
     <thead>
-    <tr>
-      <th>Data</th>
-      <th>Paciente</th>
-      <th>CPF</th>
-      <th>Serviço</th>
-      <th>Valor</th>
-      <th>Nº Recibo</th>
-      <th>Ações</th>
-    </tr>
+      <tr>
+        <th>Data</th>
+        <th>Paciente</th>
+        <th>CPF</th>
+        <th>Serviço</th>
+        <th class="nowrap">Valor</th>
+        <th class="nowrap">Nº Recibo</th>
+        <th class="nowrap nao-imprimir">Ações</th>
+      </tr>
     </thead>
     <tbody></tbody>
   </table>
@@ -181,8 +301,25 @@
     <span id="totalRecibos" class="total">Total: R$ 0,00</span>
   </div>
 
-  <div class="acoes" style="margin-top: 8px;">
-    <button type="button" class="btn-secundario" onclick="exportarExcel()">Exportar (CSV / Excel)</button>
+  <div class="acoes nao-imprimir" style="margin-top:8px;">
+    <button type="button" class="btn-secundario" id="btnExportar">Exportar CSV (Excel)</button>
+  </div>
+</div>
+
+<!-- Modal de visualização/impressão -->
+<div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+    <div class="modal-header">
+      <h2 id="modalTitulo">Recibo</h2>
+      <button type="button" class="btn-secundario btn-pequeno" id="btnFecharModal">Fechar</button>
+    </div>
+    <div class="modal-body">
+      <div id="reciboPreview" class="recibo-print"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secundario" id="btnImprimir">Imprimir</button>
+      <button type="button" class="btn-secundario" id="btnBaixarHtml">Baixar HTML</button>
+    </div>
   </div>
 </div>
 
@@ -197,9 +334,13 @@
     doc,
     onSnapshot,
     query,
-    orderBy
+    orderBy,
+    runTransaction,
+    serverTimestamp,
+    getDoc
   } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
+  // ====== CONFIG FIREBASE ======
   const firebaseConfig = {
     apiKey: "AIzaSyB05L6llPbcNsJ_SfYn2mR31Cxx1M8dzH4",
     authDomain: "controle-recibos-f7538.firebaseapp.com",
@@ -214,79 +355,182 @@
   const db = getFirestore(app);
   const colRecibos = collection(db, "recibos");
 
+  // Contador atômico para número do recibo
+  const contadorRef = doc(db, "config", "contadorRecibos");
+
+  // ====== ESTADO ======
   let recibos = [];
   let filtros = { texto: "", dataInicio: "", dataFim: "" };
-  let consultaAtiva = false;   // só mostra tabela depois da consulta
+  let consultaAtiva = false;
+
   let editingId = null;
   let editingNumero = null;
 
+  // ====== ELEMENTOS ======
   const form = document.getElementById("reciboForm");
   const tabelaBody = document.querySelector("#tabelaRecibos tbody");
-  const mensagemErro = document.getElementById("mensagemErro");
   const totalRecibos = document.getElementById("totalRecibos");
   const infoQuantidade = document.getElementById("infoQuantidade");
   const inputBuscaTexto = document.getElementById("buscaTexto");
   const inputDataInicio = document.getElementById("dataInicio");
   const inputDataFim = document.getElementById("dataFim");
+
   const inputCpf = document.getElementById("cpf");
+  const inputValor = document.getElementById("valor");
+
   const btnPrincipal = document.getElementById("btnPrincipal");
   const btnCancelarEdicao = document.getElementById("btnCancelarEdicao");
 
-  function formatarDataBR(isoDate) {
-    if (!isoDate) return "";
-    const [ano, mes, dia] = isoDate.split("-");
+  const msgErro = document.getElementById("msgErro");
+  const msgOk = document.getElementById("msgOk");
+  const msgAviso = document.getElementById("msgAviso");
+
+  const chipStatus = document.getElementById("chipStatus");
+  const btnRecarregar = document.getElementById("btnRecarregar");
+
+  const btnFiltrar = document.getElementById("btnFiltrar");
+  const btnLimpar = document.getElementById("btnLimpar");
+  const btnExportar = document.getElementById("btnExportar");
+
+  // Modal
+  const modalBackdrop = document.getElementById("modalBackdrop");
+  const reciboPreview = document.getElementById("reciboPreview");
+  const btnFecharModal = document.getElementById("btnFecharModal");
+  const btnImprimir = document.getElementById("btnImprimir");
+  const btnBaixarHtml = document.getElementById("btnBaixarHtml");
+
+  // ====== HELPERS UI ======
+  function limparMensagens(){
+    msgErro.textContent = "";
+    msgOk.textContent = "";
+    msgAviso.textContent = "";
+  }
+  function setErro(t){ msgErro.textContent = t || ""; }
+  function setOk(t){ msgOk.textContent = t || ""; }
+  function setAviso(t){ msgAviso.textContent = t || ""; }
+
+  function setLoading(isLoading, texto=""){
+    btnPrincipal.disabled = isLoading;
+    btnCancelarEdicao.disabled = isLoading;
+    btnFiltrar.disabled = isLoading;
+    btnLimpar.disabled = isLoading;
+    btnExportar.disabled = isLoading;
+    btnRecarregar.disabled = isLoading;
+    if(isLoading){
+      chipStatus.className = "chip warn";
+      chipStatus.textContent = texto ? `Status: ${texto}` : "Status: trabalhando…";
+    }else{
+      chipStatus.className = "chip ok";
+      chipStatus.textContent = "Status: conectado";
+    }
+  }
+
+  function escapeHtml(s){
+    return String(s ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  // ====== FORMATAÇÃO ======
+  function formatarDataBR(isoDate){
+    if(!isoDate) return "";
+    const [ano,mes,dia] = isoDate.split("-");
     return `${dia}/${mes}/${ano}`;
   }
-  function formatarMoeda(valor) {
-    const numero = Number(valor);
-    if (isNaN(numero)) return "R$ 0,00";
-    return "R$ " + numero.toFixed(2).replace(".", ",");
+
+  function formatarMoedaBR(valor){
+    const n = Number(valor);
+    if(Number.isNaN(n)) return "R$ 0,00";
+    return n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
   }
-  function validarCPF(cpf) {
-    const regex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
-    return regex.test(cpf);
+
+  function normalizarTexto(s){
+    return (s ?? "")
+      .toString()
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .trim();
+  }
+
+  // Valor: aceita "150,00" ou "150.00" ou "1.234,56"
+  function parseValorBR(str){
+    if(!str) return NaN;
+    let v = str.toString().trim();
+    // remove "R$" e espaços
+    v = v.replace(/[R$\s]/g,"");
+    // se tiver vírgula e ponto, assume formato BR (milhar com ponto, decimal com vírgula)
+    const temVirgula = v.includes(",");
+    const temPonto = v.includes(".");
+    if(temVirgula && temPonto){
+      v = v.replaceAll(".","").replace(",",".");
+    }else if(temVirgula && !temPonto){
+      v = v.replace(",",".");
+    }
+    // remove qualquer coisa que não seja número, ponto ou sinal
+    v = v.replace(/[^0-9.\-]/g,"");
+    return parseFloat(v);
+  }
+
+  // ====== CPF (VALIDAÇÃO REAL) ======
+  function somenteDigitos(s){ return (s ?? "").replace(/\D/g,""); }
+
+  function validarCPFCompleto(cpfFormatado){
+    const cpf = somenteDigitos(cpfFormatado);
+    if(cpf.length !== 11) return false;
+    if(/^(\d)\1{10}$/.test(cpf)) return false; // tudo igual
+
+    const calcDig = (base, fatorInicial) => {
+      let soma = 0;
+      for(let i=0;i<base.length;i++){
+        soma += Number(base[i]) * (fatorInicial - i);
+      }
+      const resto = soma % 11;
+      return (resto < 2) ? 0 : (11 - resto);
+    };
+
+    const d1 = calcDig(cpf.slice(0,9), 10);
+    const d2 = calcDig(cpf.slice(0,9) + d1, 11);
+    return cpf.endsWith(String(d1) + String(d2));
   }
 
   // máscara CPF
-  inputCpf.addEventListener("input", function () {
-    let v = this.value.replace(/\D/g, "");
-    if (v.length > 11) v = v.slice(0, 11);
-    if (v.length > 9) {
-      this.value = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
-    } else if (v.length > 6) {
-      this.value = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3");
-    } else if (v.length > 3) {
-      this.value = v.replace(/(\d{3})(\d{1,3})/, "$1.$2");
-    } else {
+  inputCpf.addEventListener("input", function(){
+    let v = somenteDigitos(this.value);
+    if(v.length > 11) v = v.slice(0,11);
+    if(v.length > 9){
+      this.value = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,"$1.$2.$3-$4");
+    }else if(v.length > 6){
+      this.value = v.replace(/(\d{3})(\d{3})(\d{1,3})/,"$1.$2.$3");
+    }else if(v.length > 3){
+      this.value = v.replace(/(\d{3})(\d{1,3})/,"$1.$2");
+    }else{
       this.value = v;
     }
   });
 
-  const q = query(colRecibos, orderBy("data", "desc"));
-  onSnapshot(q, (snapshot) => {
-    recibos = snapshot.docs.map(docSnap => ({
-      id: docSnap.id,
-      ...docSnap.data()
-    }));
-    renderTabela();
+  // máscara/limpeza do valor (não agressiva, só evita letras)
+  inputValor.addEventListener("input", function(){
+    this.value = this.value.replace(/[^0-9.,\sR$]/g,"");
   });
 
-  function getRecibosFiltrados() {
-    return recibos.filter(r => {
-      if (filtros.texto) {
-        const texto = filtros.texto;
-        const alvo = (r.paciente + " " + r.cpf + " " + r.servico + " " + r.numero).toLowerCase();
-        if (!alvo.includes(texto)) return false;
+  // ====== CONSULTA / FILTROS ======
+  function getRecibosFiltrados(){
+    return recibos.filter(r=>{
+      if(filtros.texto){
+        const alvo = normalizarTexto(`${r.paciente} ${r.cpf} ${r.servico} ${r.numero}`);
+        if(!alvo.includes(filtros.texto)) return false;
       }
-      if (filtros.dataInicio && r.data < filtros.dataInicio) return false;
-      if (filtros.dataFim && r.data > filtros.dataFim) return false;
+      if(filtros.dataInicio && r.data < filtros.dataInicio) return false;
+      if(filtros.dataFim && r.data > filtros.dataFim) return false;
       return true;
     });
   }
 
-  function renderTabela() {
-    // Se a consulta NÃO estiver ativa, não mostra nenhum recibo
-    if (!consultaAtiva) {
+  function renderTabela(){
+    if(!consultaAtiva){
       tabelaBody.innerHTML = "";
       infoQuantidade.textContent = "Nenhum recibo exibido. Use a busca e clique em Filtrar.";
       totalRecibos.textContent = "Total: R$ 0,00";
@@ -296,37 +540,80 @@
     tabelaBody.innerHTML = "";
     const lista = getRecibosFiltrados();
 
-    lista.forEach(r => {
+    lista.forEach(r=>{
       const row = tabelaBody.insertRow();
       row.insertCell(0).textContent = formatarDataBR(r.data);
       row.insertCell(1).textContent = r.paciente;
       row.insertCell(2).textContent = r.cpf;
       row.insertCell(3).textContent = r.servico;
-      row.insertCell(4).textContent = formatarMoeda(r.valor);
+      row.insertCell(4).textContent = formatarMoedaBR(r.valor);
       row.insertCell(5).textContent = r.numero ?? "";
 
       const celAcoes = row.insertCell(6);
+      celAcoes.className = "nao-imprimir";
+
+      const btnVer = document.createElement("button");
+      btnVer.textContent = "Ver/Imprimir";
+      btnVer.className = "btn-secundario btn-pequeno";
+      btnVer.style.marginRight = "4px";
+      btnVer.onclick = ()=>abrirRecibo(r);
+      celAcoes.appendChild(btnVer);
 
       const btnEditar = document.createElement("button");
       btnEditar.textContent = "Editar";
       btnEditar.className = "btn-secundario btn-pequeno";
       btnEditar.style.marginRight = "4px";
-      btnEditar.onclick = () => iniciarEdicao(r);
+      btnEditar.onclick = ()=>iniciarEdicao(r);
       celAcoes.appendChild(btnEditar);
 
       const btnRemover = document.createElement("button");
       btnRemover.textContent = "Remover";
-      btnRemover.className = "btn-secundario btn-pequeno";
-      btnRemover.onclick = () => removerRecibo(r.id);
+      btnRemover.className = "btn-alerta btn-pequeno";
+      btnRemover.onclick = ()=>removerRecibo(r.id);
       celAcoes.appendChild(btnRemover);
     });
 
-    const total = lista.reduce((s, r) => s + Number(r.valor), 0);
-    totalRecibos.textContent = "Total: " + formatarMoeda(total);
+    const total = lista.reduce((s,r)=>s + Number(r.valor || 0), 0);
+    totalRecibos.textContent = "Total: " + formatarMoedaBR(total);
     infoQuantidade.textContent = `Exibindo ${lista.length} recibo(s)`;
   }
 
-  function iniciarEdicao(r) {
+  // debounce
+  function debounce(fn, delay=300){
+    let t = null;
+    return (...args)=>{
+      clearTimeout(t);
+      t = setTimeout(()=>fn(...args), delay);
+    };
+  }
+
+  const onBuscaDebounced = debounce(()=>{
+    filtros.texto = normalizarTexto(inputBuscaTexto.value);
+    if(consultaAtiva) renderTabela();
+  }, 250);
+
+  inputBuscaTexto.addEventListener("input", onBuscaDebounced);
+
+  btnFiltrar.addEventListener("click", ()=>{
+    filtros.texto = normalizarTexto(inputBuscaTexto.value);
+    filtros.dataInicio = inputDataInicio.value;
+    filtros.dataFim = inputDataFim.value;
+    consultaAtiva = true;
+    renderTabela();
+  });
+
+  btnLimpar.addEventListener("click", ()=>{
+    filtros = { texto:"", dataInicio:"", dataFim:"" };
+    inputBuscaTexto.value = "";
+    inputDataInicio.value = "";
+    inputDataFim.value = "";
+    consultaAtiva = false;
+    renderTabela();
+  });
+
+  // ====== EDIÇÃO ======
+  function iniciarEdicao(r){
+    limparMensagens();
     editingId = r.id;
     editingNumero = r.numero ?? null;
 
@@ -334,140 +621,251 @@
     document.getElementById("paciente").value = r.paciente;
     inputCpf.value = r.cpf;
     document.getElementById("servico").value = r.servico;
-    document.getElementById("valor").value = r.valor;
+    inputValor.value = Number(r.valor).toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2});
 
     btnPrincipal.textContent = "Salvar alterações";
     btnCancelarEdicao.style.display = "inline-block";
-
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function cancelarEdicao() {
+  function cancelarEdicao(){
     editingId = null;
     editingNumero = null;
     form.reset();
-    mensagemErro.textContent = "";
+    limparMensagens();
     btnPrincipal.textContent = "Adicionar recibo";
     btnCancelarEdicao.style.display = "none";
   }
-
   btnCancelarEdicao.addEventListener("click", cancelarEdicao);
 
-  window.aplicarFiltros = function () {
-    filtros.texto = inputBuscaTexto.value.trim().toLowerCase();
-    filtros.dataInicio = inputDataInicio.value;
-    filtros.dataFim = inputDataFim.value;
-    consultaAtiva = true;
+  // ====== FIRESTORE LISTEN ======
+  setLoading(true, "conectando…");
+  const q = query(colRecibos, orderBy("data","desc"));
+  onSnapshot(q, (snapshot)=>{
+    recibos = snapshot.docs.map(d=>({ id:d.id, ...d.data() }));
+    setLoading(false);
     renderTabela();
-  };
-
-  window.limparFiltros = function () {
-    filtros = { texto: "", dataInicio: "", dataFim: "" };
-    inputBuscaTexto.value = "";
-    inputDataInicio.value = "";
-    inputDataFim.value = "";
-    consultaAtiva = false;
-    renderTabela();
-  };
-
-  inputBuscaTexto.addEventListener("input", () => {
-    filtros.texto = inputBuscaTexto.value.trim().toLowerCase();
-    if (consultaAtiva) renderTabela();
+  }, (err)=>{
+    console.error(err);
+    chipStatus.className = "chip err";
+    chipStatus.textContent = "Status: erro de conexão";
+    setErro("Erro ao carregar recibos. Verifique a conexão e as regras do Firestore.");
   });
 
-  form.addEventListener("submit", async (e) => {
+  btnRecarregar.addEventListener("click", ()=>location.reload());
+
+  // ====== SUBMIT (ADD / UPDATE) ======
+  form.addEventListener("submit", async (e)=>{
     e.preventDefault();
-    mensagemErro.textContent = "";
+    limparMensagens();
 
     const data = document.getElementById("data").value;
     const paciente = document.getElementById("paciente").value.trim();
     const cpf = inputCpf.value.trim();
     const servico = document.getElementById("servico").value.trim();
-    const valorStr = document.getElementById("valor").value;
+    const valorStr = inputValor.value.trim();
 
-    if (!data || !paciente || !cpf || !servico || !valorStr) {
-      mensagemErro.textContent = "Preencha todos os campos.";
+    if(!data || !paciente || !cpf || !servico || !valorStr){
+      setErro("Preencha todos os campos.");
       return;
     }
-    if (!validarCPF(cpf)) {
-      mensagemErro.textContent = "CPF inválido! Use o formato 000.000.000-00.";
+    if(!validarCPFCompleto(cpf)){
+      setErro("CPF inválido. Verifique os dígitos e use o formato 000.000.000-00.");
       return;
     }
-    const valor = parseFloat(valorStr);
-    if (isNaN(valor) || valor < 0) {
-      mensagemErro.textContent = "Informe um valor válido.";
+    const valor = parseValorBR(valorStr);
+    if(Number.isNaN(valor) || valor < 0){
+      setErro("Informe um valor válido (ex.: 150,00).");
       return;
     }
 
-    try {
-      if (editingId) {
-        await updateDoc(doc(db, "recibos", editingId), {
-          data,
-          paciente,
-          cpf,
-          servico,
-          valor,
-          numero: editingNumero
+    try{
+      setLoading(true, editingId ? "salvando edição…" : "salvando novo recibo…");
+
+      if(editingId){
+        const ok = confirm("Confirma salvar as alterações deste recibo?");
+        if(!ok){
+          setLoading(false);
+          setAviso("Edição cancelada.");
+          return;
+        }
+
+        await updateDoc(doc(db,"recibos",editingId),{
+          data, paciente, cpf, servico, valor,
+          numero: editingNumero,
+          atualizadoEm: serverTimestamp()
         });
-      } else {
-        const maxNumero = recibos.reduce((max, r) => {
-          const n = parseInt(r.numero, 10);
-          if (isNaN(n)) return max;
-          return n > max ? n : max;
-        }, 0);
-        const novoNumero = String(maxNumero + 1).padStart(2, "0");
 
-        await addDoc(colRecibos, {
-          data,
-          paciente,
-          cpf,
-          servico,
-          valor,
-          numero: novoNumero
+        setOk("Alterações salvas com sucesso.");
+      }else{
+        // Número atômico: transação
+        await runTransaction(db, async (transaction)=>{
+          const snap = await transaction.get(contadorRef);
+          let atual = 0;
+          if(!snap.exists()){
+            transaction.set(contadorRef, { atual: 0 });
+            atual = 0;
+          }else{
+            atual = snap.data().atual ?? 0;
+          }
+          const proximo = atual + 1;
+          const novoNumero = String(proximo).padStart(2, "0");
+
+          transaction.update(contadorRef, { atual: proximo });
+
+          const novoDocRef = doc(collection(db, "recibos"));
+          transaction.set(novoDocRef, {
+            data, paciente, cpf, servico, valor,
+            numero: novoNumero,
+            criadoEm: serverTimestamp()
+          });
         });
+
+        setOk("Recibo adicionado com sucesso.");
       }
 
-      cancelarEdicao(); // limpa formulário e volta para modo "adicionar"
-    } catch (err) {
+      cancelarEdicao();
+      // se usuário quiser ver a tabela logo após inserir, mantenha como estava:
+      // (não força consultaAtiva = true)
+    }catch(err){
       console.error(err);
-      mensagemErro.textContent = "Erro ao salvar recibo. Tente novamente.";
+      setErro("Erro ao salvar recibo. Verifique permissões (rules) e tente novamente.");
+      chipStatus.className = "chip err";
+      chipStatus.textContent = "Status: verifique regras/permissões";
+    }finally{
+      setLoading(false);
     }
   });
 
-  async function removerRecibo(id) {
-    if (!confirm("Deseja realmente remover este recibo?")) return;
-    try {
-      await deleteDoc(doc(db, "recibos", id));
-    } catch (err) {
+  // ====== REMOVER ======
+  async function removerRecibo(id){
+    limparMensagens();
+    const ok = confirm("Deseja realmente remover este recibo? Essa ação não pode ser desfeita.");
+    if(!ok) return;
+
+    try{
+      setLoading(true, "removendo…");
+      await deleteDoc(doc(db,"recibos",id));
+      setOk("Recibo removido.");
+    }catch(err){
       console.error(err);
-      alert("Erro ao remover recibo.");
+      setErro("Erro ao remover. Verifique permissões (rules).");
+    }finally{
+      setLoading(false);
     }
   }
 
-  window.exportarExcel = function () {
+  // ====== EXPORTAR CSV ======
+  btnExportar.addEventListener("click", ()=>{
     const lista = consultaAtiva ? getRecibosFiltrados() : [];
-    if (lista.length === 0) {
+    if(lista.length === 0){
       alert("Nenhum recibo para exportar. Faça uma consulta primeiro.");
       return;
     }
-    let csv = "Data,Paciente,CPF,Serviço,Valor,Nº Recibo\n";
-    lista.forEach(r => {
-      csv += `"${formatarDataBR(r.data)}","${r.paciente}","${r.cpf}","${r.servico}","${formatarMoeda(r.valor)}","${r.numero ?? ""}"\n`;
+    // Dica: Excel no PT-BR costuma ler melhor CSV com ; (ponto e vírgula)
+    let csv = "Data;Paciente;CPF;Serviço;Valor;Nº Recibo\n";
+    lista.forEach(r=>{
+      const dataBR = formatarDataBR(r.data);
+      const valorNum = Number(r.valor);
+      // valor com vírgula como decimal (texto), mas sem "R$"
+      const valorBR = (Number.isNaN(valorNum) ? "" : valorNum.toFixed(2)).replace(".", ",");
+      csv += `"${dataBR}";"${String(r.paciente).replaceAll('"','""')}";"${r.cpf}";"${String(r.servico).replaceAll('"','""')}";"${valorBR}";"${r.numero ?? ""}"\n`;
     });
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+
+    const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "recibos.csv";
+    link.download = `recibos_${new Date().toISOString().slice(0,10)}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
+  });
 
-  // ao carregar a página: não mostra nenhum recibo até consultar
+  // ====== VER/IMPRIMIR ======
+  function abrirRecibo(r){
+    limparMensagens();
+    const html = gerarHtmlRecibo(r);
+    reciboPreview.innerHTML = html;
+    modalBackdrop.style.display = "flex";
+    modalBackdrop.setAttribute("aria-hidden","false");
+  }
+
+  function fecharModal(){
+    modalBackdrop.style.display = "none";
+    modalBackdrop.setAttribute("aria-hidden","true");
+    reciboPreview.innerHTML = "";
+  }
+
+  btnFecharModal.addEventListener("click", fecharModal);
+  modalBackdrop.addEventListener("click", (e)=>{
+    if(e.target === modalBackdrop) fecharModal();
+  });
+
+  btnImprimir.addEventListener("click", ()=>{
+    window.print();
+  });
+
+  btnBaixarHtml.addEventListener("click", ()=>{
+    const content = `
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recibo</title>
+<style>
+  body{font-family:Arial,sans-serif;padding:18px}
+  .rec{border:1px dashed #ddd;border-radius:10px;padding:14px}
+  .t{font-weight:800;font-size:16px;margin-bottom:8px}
+  .l{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:6px 0}
+  .ass{margin-top:18px;display:flex;justify-content:flex-end}
+  .ass .ln{width:260px;border-top:1px solid #111;margin-top:30px;text-align:center;padding-top:6px;font-size:12px}
+</style>
+</head><body>${reciboPreview.innerHTML}</body></html>`.trim();
+
+    const blob = new Blob([content], { type:"text/html;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "recibo.html";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+
+  function gerarHtmlRecibo(r){
+    const data = escapeHtml(formatarDataBR(r.data));
+    const paciente = escapeHtml(r.paciente);
+    const cpf = escapeHtml(r.cpf);
+    const servico = escapeHtml(r.servico);
+    const valor = escapeHtml(formatarMoedaBR(r.valor));
+    const numero = escapeHtml(r.numero ?? "");
+
+    return `
+      <div class="recibo-print recibo-print__inner rec">
+        <div class="titulo t">RECIBO Nº ${numero}</div>
+        <div class="linha l"><div><b>Data:</b> ${data}</div><div><b>CPF:</b> ${cpf}</div></div>
+        <div class="linha l"><div><b>Paciente:</b> ${paciente}</div></div>
+        <div class="linha l"><div><b>Serviço prestado:</b> ${servico}</div></div>
+        <div class="linha l"><div><b>Valor:</b> ${valor}</div></div>
+        <div class="assinatura ass">
+          <div class="linha-ass ln">Assinatura / Carimbo</div>
+        </div>
+      </div>
+    `.trim();
+  }
+
+  // ====== INICIAL: não mostra recibos até consultar ======
   renderTabela();
+
+  // ====== (OPCIONAL) Checa contador existe e cria se não existir (sem travar) ======
+  // Ajuda no primeiro uso.
+  (async ()=>{
+    try{
+      const snap = await getDoc(contadorRef);
+      if(!snap.exists()){
+        // não cria aqui para não depender de permissão,
+        // a transação cria automaticamente se permitido.
+        setAviso("Primeiro uso: o contador de recibos será iniciado automaticamente ao salvar o 1º recibo (se as regras permitirem).");
+      }
+    }catch(_){}
+  })();
 </script>
 </body>
 </html>
-
-
-
