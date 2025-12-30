@@ -153,15 +153,37 @@
       form,.filtros{grid-template-columns:1fr}
     }
 
-    @media print{
-      body{background:#fff;padding:0}
-      .container{box-shadow:none;border-radius:0;max-width:none;padding:0}
-      .nao-imprimir{display:none !important}
-      .modal-backdrop{position:static;display:block !important;background:transparent;padding:0}
-      .modal{box-shadow:none;border-radius:0}
-      .modal-header,.modal-footer{display:none}
-      .modal-body{padding:0}
-      .recibo-print{border:none}
+    /* ✅ IMPRIMIR SOMENTE O RECIBO SELECIONADO (MODAL) */
+    @media print {
+      body * { visibility: hidden !important; }
+
+      #modalBackdrop, #modalBackdrop * { visibility: visible !important; }
+
+      #modalBackdrop{
+        position: fixed !important;
+        inset: 0 !important;
+        display: flex !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        background: #fff !important;
+        padding: 0 !important;
+      }
+
+      .modal{
+        width: 100% !important;
+        max-width: 900px !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+      }
+
+      .modal-header, .modal-footer{ display: none !important; }
+      .modal-body{ padding: 0 !important; }
+
+      .recibo-print{
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 18px !important;
+      }
     }
   </style>
 </head>
@@ -172,13 +194,10 @@
     <div>
       <h1>Controle de Recibos</h1>
       <p class="descricao">
-        ✅ Inclui: número atômico (sem duplicar), validação real de CPF, exportação CSV (Excel),
-        consulta só após Filtrar, busca com debounce, Ver/Imprimir e <b>Opção 1</b> de envio:
-        <b>WhatsApp e E-mail (1 clique)</b> com mensagem pronta.
-        <br><span class="mini">Obs.: envio 1-clique abre WhatsApp/Gmail para você confirmar o envio.</span>
+        ✅ Agora imprime <b>somente o recibo selecionado</b> e inclui <b>telefone</b> no cadastro para envio por WhatsApp (1 clique).
       </p>
     </div>
-    <div class="topo-direita nao-imprimir">
+    <div class="topo-direita">
       <span id="chipStatus" class="chip warn">Status: carregando…</span>
       <button type="button" class="btn-secundario" id="btnRecarregar">Recarregar</button>
     </div>
@@ -192,7 +211,7 @@
     <div id="msgAviso" class="msg aviso"></div>
   </div>
 
-  <form id="reciboForm" class="nao-imprimir">
+  <form id="reciboForm">
     <div class="campo">
       <label for="data">Data</label>
       <input type="date" id="data" required />
@@ -220,17 +239,11 @@
       <div class="hint">Aceita vírgula ou ponto. Salva como número.</div>
     </div>
 
-    <!-- ✅ NOVOS CAMPOS (OPÇÃO 1) -->
+    <!-- ✅ TELEFONE (WHATSAPP) -->
     <div class="campo">
-      <label for="telefone">Telefone/WhatsApp (com DDD)</label>
+      <label for="telefone">Telefone/WhatsApp (DDD + número)</label>
       <input type="text" id="telefone" inputmode="tel" placeholder="Ex.: 11999999999" />
-      <div class="hint">Só números. Se preencher, libera “Enviar WhatsApp”.</div>
-    </div>
-
-    <div class="campo">
-      <label for="email">E-mail do cliente</label>
-      <input type="email" id="email" placeholder="Ex.: cliente@email.com" />
-      <div class="hint">Se preencher, libera “Enviar E-mail”.</div>
+      <div class="hint">Somente números. Se tiver 10/11 dígitos, o sistema adiciona +55 ao enviar.</div>
     </div>
 
     <div class="linha-botoes-form">
@@ -240,7 +253,7 @@
   </form>
 
   <div class="secao-titulo">Consultar recibos</div>
-  <div class="filtros nao-imprimir">
+  <div class="filtros">
     <div class="campo">
       <label for="buscaTexto">Texto (paciente, CPF, serviço, nº)</label>
       <input type="text" id="buscaTexto" placeholder="Digite para pesquisar..." />
@@ -267,7 +280,7 @@
         <th>Serviço</th>
         <th class="nowrap">Valor</th>
         <th class="nowrap">Nº Recibo</th>
-        <th class="nowrap nao-imprimir">Ações</th>
+        <th class="nowrap">Ações</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -278,12 +291,12 @@
     <span id="totalRecibos" class="total">Total: R$ 0,00</span>
   </div>
 
-  <div class="acoes nao-imprimir" style="margin-top:8px;">
+  <div class="acoes" style="margin-top:8px;">
     <button type="button" class="btn-secundario" id="btnExportar">Exportar CSV (Excel)</button>
   </div>
 </div>
 
-<!-- Modal de visualização/impressão + envio 1-clique -->
+<!-- Modal do recibo (impressão e envio) -->
 <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
     <div class="modal-header">
@@ -293,13 +306,12 @@
     <div class="modal-body">
       <div id="reciboPreview" class="recibo-print"></div>
       <div class="hint" style="margin-top:8px">
-        Dica: use os botões abaixo para abrir WhatsApp ou e-mail com a mensagem pronta (1 clique).
+        Dica: “Enviar WhatsApp” abre o WhatsApp com mensagem pronta para confirmar o envio.
       </div>
     </div>
     <div class="modal-footer">
       <div class="grupo-esq">
         <button type="button" class="btn-secundario" id="btnEnviarWhats">Enviar WhatsApp</button>
-        <button type="button" class="btn-secundario" id="btnEnviarEmail">Enviar E-mail</button>
       </div>
       <div class="grupo-dir">
         <button type="button" class="btn-secundario" id="btnImprimir">Imprimir</button>
@@ -350,8 +362,7 @@
   let editingId = null;
   let editingNumero = null;
 
-  // para “Opção 1” (envio 1-clique no modal)
-  let reciboModalAtual = null;
+  let reciboModalAtual = null; // para envio/print
 
   // ====== ELEMENTOS ======
   const form = document.getElementById("reciboForm");
@@ -365,8 +376,7 @@
 
   const inputCpf = document.getElementById("cpf");
   const inputValor = document.getElementById("valor");
-  const inputTelefone = document.getElementById("telefone"); // ✅ novo
-  const inputEmail = document.getElementById("email");       // ✅ novo
+  const inputTelefone = document.getElementById("telefone");
 
   const btnPrincipal = document.getElementById("btnPrincipal");
   const btnCancelarEdicao = document.getElementById("btnCancelarEdicao");
@@ -378,588 +388,4 @@
   const chipStatus = document.getElementById("chipStatus");
   const btnRecarregar = document.getElementById("btnRecarregar");
 
-  const btnFiltrar = document.getElementById("btnFiltrar");
-  const btnLimpar = document.getElementById("btnLimpar");
-  const btnExportar = document.getElementById("btnExportar");
-
-  // Modal
-  const modalBackdrop = document.getElementById("modalBackdrop");
-  const reciboPreview = document.getElementById("reciboPreview");
-  const btnFecharModal = document.getElementById("btnFecharModal");
-  const btnImprimir = document.getElementById("btnImprimir");
-  const btnBaixarHtml = document.getElementById("btnBaixarHtml");
-  const btnEnviarWhats = document.getElementById("btnEnviarWhats");
-  const btnEnviarEmail = document.getElementById("btnEnviarEmail");
-
-  // ====== HELPERS UI ======
-  function limparMensagens(){
-    msgErro.textContent = "";
-    msgOk.textContent = "";
-    msgAviso.textContent = "";
-  }
-  function setErro(t){ msgErro.textContent = t || ""; }
-  function setOk(t){ msgOk.textContent = t || ""; }
-  function setAviso(t){ msgAviso.textContent = t || ""; }
-
-  function setLoading(isLoading, texto=""){
-    btnPrincipal.disabled = isLoading;
-    btnCancelarEdicao.disabled = isLoading;
-    btnFiltrar.disabled = isLoading;
-    btnLimpar.disabled = isLoading;
-    btnExportar.disabled = isLoading;
-    btnRecarregar.disabled = isLoading;
-    if(isLoading){
-      chipStatus.className = "chip warn";
-      chipStatus.textContent = texto ? `Status: ${texto}` : "Status: trabalhando…";
-    }else{
-      chipStatus.className = "chip ok";
-      chipStatus.textContent = "Status: conectado";
-    }
-  }
-
-  function escapeHtml(s){
-    return String(s ?? "")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-
-  // ====== FORMATAÇÃO ======
-  function formatarDataBR(isoDate){
-    if(!isoDate) return "";
-    const [ano,mes,dia] = isoDate.split("-");
-    return `${dia}/${mes}/${ano}`;
-  }
-  function formatarMoedaBR(valor){
-    const n = Number(valor);
-    if(Number.isNaN(n)) return "R$ 0,00";
-    return n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-  }
-  function normalizarTexto(s){
-    return (s ?? "")
-      .toString()
-      .toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-      .trim();
-  }
-
-  // Valor: aceita "150,00" ou "150.00" ou "1.234,56"
-  function parseValorBR(str){
-    if(!str) return NaN;
-    let v = str.toString().trim();
-    v = v.replace(/[R$\s]/g,"");
-    const temVirgula = v.includes(",");
-    const temPonto = v.includes(".");
-    if(temVirgula && temPonto){
-      v = v.replaceAll(".","").replace(",",".");
-    }else if(temVirgula && !temPonto){
-      v = v.replace(",",".");
-    }
-    v = v.replace(/[^0-9.\-]/g,"");
-    return parseFloat(v);
-  }
-
-  // ====== CPF (VALIDAÇÃO REAL) ======
-  function somenteDigitos(s){ return (s ?? "").replace(/\D/g,""); }
-  function validarCPFCompleto(cpfFormatado){
-    const cpf = somenteDigitos(cpfFormatado);
-    if(cpf.length !== 11) return false;
-    if(/^(\d)\1{10}$/.test(cpf)) return false;
-
-    const calcDig = (base, fatorInicial) => {
-      let soma = 0;
-      for(let i=0;i<base.length;i++){
-        soma += Number(base[i]) * (fatorInicial - i);
-      }
-      const resto = soma % 11;
-      return (resto < 2) ? 0 : (11 - resto);
-    };
-
-    const d1 = calcDig(cpf.slice(0,9), 10);
-    const d2 = calcDig(cpf.slice(0,9) + d1, 11);
-    return cpf.endsWith(String(d1) + String(d2));
-  }
-
-  // máscara CPF
-  inputCpf.addEventListener("input", function(){
-    let v = somenteDigitos(this.value);
-    if(v.length > 11) v = v.slice(0,11);
-    if(v.length > 9){
-      this.value = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,"$1.$2.$3-$4");
-    }else if(v.length > 6){
-      this.value = v.replace(/(\d{3})(\d{3})(\d{1,3})/,"$1.$2.$3");
-    }else if(v.length > 3){
-      this.value = v.replace(/(\d{3})(\d{1,3})/,"$1.$2");
-    }else{
-      this.value = v;
-    }
-  });
-
-  // telefone: só números
-  inputTelefone.addEventListener("input", function(){
-    this.value = somenteDigitos(this.value).slice(0, 13); // até 13 para +55 + DDD + número (sem +)
-  });
-
-  // valor: limpa letras
-  inputValor.addEventListener("input", function(){
-    this.value = this.value.replace(/[^0-9.,\sR$]/g,"");
-  });
-
-  // ====== CONSULTA / FILTROS ======
-  function getRecibosFiltrados(){
-    return recibos.filter(r=>{
-      if(filtros.texto){
-        const alvo = normalizarTexto(`${r.paciente} ${r.cpf} ${r.servico} ${r.numero}`);
-        if(!alvo.includes(filtros.texto)) return false;
-      }
-      if(filtros.dataInicio && r.data < filtros.dataInicio) return false;
-      if(filtros.dataFim && r.data > filtros.dataFim) return false;
-      return true;
-    });
-  }
-
-  function renderTabela(){
-    if(!consultaAtiva){
-      tabelaBody.innerHTML = "";
-      infoQuantidade.textContent = "Nenhum recibo exibido. Use a busca e clique em Filtrar.";
-      totalRecibos.textContent = "Total: R$ 0,00";
-      return;
-    }
-
-    tabelaBody.innerHTML = "";
-    const lista = getRecibosFiltrados();
-
-    lista.forEach(r=>{
-      const row = tabelaBody.insertRow();
-      row.insertCell(0).textContent = formatarDataBR(r.data);
-      row.insertCell(1).textContent = r.paciente;
-      row.insertCell(2).textContent = r.cpf;
-      row.insertCell(3).textContent = r.servico;
-      row.insertCell(4).textContent = formatarMoedaBR(r.valor);
-      row.insertCell(5).textContent = r.numero ?? "";
-
-      const celAcoes = row.insertCell(6);
-      celAcoes.className = "nao-imprimir";
-
-      const btnVer = document.createElement("button");
-      btnVer.textContent = "Ver/Imprimir";
-      btnVer.className = "btn-secundario btn-pequeno";
-      btnVer.style.marginRight = "4px";
-      btnVer.onclick = ()=>abrirRecibo(r);
-      celAcoes.appendChild(btnVer);
-
-      const btnEditar = document.createElement("button");
-      btnEditar.textContent = "Editar";
-      btnEditar.className = "btn-secundario btn-pequeno";
-      btnEditar.style.marginRight = "4px";
-      btnEditar.onclick = ()=>iniciarEdicao(r);
-      celAcoes.appendChild(btnEditar);
-
-      const btnRemover = document.createElement("button");
-      btnRemover.textContent = "Remover";
-      btnRemover.className = "btn-alerta btn-pequeno";
-      btnRemover.onclick = ()=>removerRecibo(r.id);
-      celAcoes.appendChild(btnRemover);
-    });
-
-    const total = lista.reduce((s,r)=>s + Number(r.valor || 0), 0);
-    totalRecibos.textContent = "Total: " + formatarMoedaBR(total);
-    infoQuantidade.textContent = `Exibindo ${lista.length} recibo(s)`;
-  }
-
-  // debounce
-  function debounce(fn, delay=300){
-    let t = null;
-    return (...args)=>{
-      clearTimeout(t);
-      t = setTimeout(()=>fn(...args), delay);
-    };
-  }
-
-  const onBuscaDebounced = debounce(()=>{
-    filtros.texto = normalizarTexto(inputBuscaTexto.value);
-    if(consultaAtiva) renderTabela();
-  }, 250);
-
-  inputBuscaTexto.addEventListener("input", onBuscaDebounced);
-
-  btnFiltrar.addEventListener("click", ()=>{
-    filtros.texto = normalizarTexto(inputBuscaTexto.value);
-    filtros.dataInicio = inputDataInicio.value;
-    filtros.dataFim = inputDataFim.value;
-    consultaAtiva = true;
-    renderTabela();
-  });
-
-  btnLimpar.addEventListener("click", ()=>{
-    filtros = { texto:"", dataInicio:"", dataFim:"" };
-    inputBuscaTexto.value = "";
-    inputDataInicio.value = "";
-    inputDataFim.value = "";
-    consultaAtiva = false;
-    renderTabela();
-  });
-
-  // ====== EDIÇÃO ======
-  function iniciarEdicao(r){
-    limparMensagens();
-    editingId = r.id;
-    editingNumero = r.numero ?? null;
-
-    document.getElementById("data").value = r.data;
-    document.getElementById("paciente").value = r.paciente;
-    inputCpf.value = r.cpf;
-    document.getElementById("servico").value = r.servico;
-    inputValor.value = Number(r.valor).toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2});
-
-    inputTelefone.value = somenteDigitos(r.telefone ?? "");
-    inputEmail.value = r.email ?? "";
-
-    btnPrincipal.textContent = "Salvar alterações";
-    btnCancelarEdicao.style.display = "inline-block";
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  function cancelarEdicao(){
-    editingId = null;
-    editingNumero = null;
-    form.reset();
-    limparMensagens();
-    btnPrincipal.textContent = "Adicionar recibo";
-    btnCancelarEdicao.style.display = "none";
-  }
-  btnCancelarEdicao.addEventListener("click", cancelarEdicao);
-
-  // ====== FIRESTORE LISTEN ======
-  setLoading(true, "conectando…");
-  const q = query(colRecibos, orderBy("data","desc"));
-  onSnapshot(q, (snapshot)=>{
-    recibos = snapshot.docs.map(d=>({ id:d.id, ...d.data() }));
-    setLoading(false);
-    renderTabela();
-  }, (err)=>{
-    console.error(err);
-    chipStatus.className = "chip err";
-    chipStatus.textContent = "Status: erro de conexão";
-    setErro("Erro ao carregar recibos. Verifique a conexão e as regras do Firestore.");
-  });
-
-  btnRecarregar.addEventListener("click", ()=>location.reload());
-
-  // ====== SALVAR (ADD / UPDATE) ======
-  form.addEventListener("submit", async (e)=>{
-    e.preventDefault();
-    limparMensagens();
-
-    const data = document.getElementById("data").value;
-    const paciente = document.getElementById("paciente").value.trim();
-    const cpf = inputCpf.value.trim();
-    const servico = document.getElementById("servico").value.trim();
-    const valorStr = inputValor.value.trim();
-
-    const telefone = somenteDigitos(inputTelefone.value.trim()); // ✅ novo
-    const email = (inputEmail.value.trim() || "");              // ✅ novo
-
-    if(!data || !paciente || !cpf || !servico || !valorStr){
-      setErro("Preencha todos os campos obrigatórios.");
-      return;
-    }
-    if(!validarCPFCompleto(cpf)){
-      setErro("CPF inválido. Verifique os dígitos e use o formato 000.000.000-00.");
-      return;
-    }
-    const valor = parseValorBR(valorStr);
-    if(Number.isNaN(valor) || valor < 0){
-      setErro("Informe um valor válido (ex.: 150,00).");
-      return;
-    }
-
-    // telefone opcional: se preenchido, valida tamanho mínimo
-    if(telefone && telefone.length < 10){
-      setErro("Telefone muito curto. Use DDD + número (somente números).");
-      return;
-    }
-
-    // e-mail opcional: input type=email já valida, mas garantimos básico:
-    if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-      setErro("E-mail inválido.");
-      return;
-    }
-
-    try{
-      setLoading(true, editingId ? "salvando edição…" : "salvando novo recibo…");
-
-      if(editingId){
-        const ok = confirm("Confirma salvar as alterações deste recibo?");
-        if(!ok){
-          setLoading(false);
-          setAviso("Edição cancelada.");
-          return;
-        }
-
-        await updateDoc(doc(db,"recibos",editingId),{
-          data, paciente, cpf, servico, valor,
-          telefone: telefone || null,
-          email: email || null,
-          numero: editingNumero,
-          atualizadoEm: serverTimestamp()
-        });
-
-        setOk("Alterações salvas com sucesso.");
-      }else{
-        // ✅ contador atômico robusto (1º uso sem erro)
-        await runTransaction(db, async (transaction)=>{
-          const snap = await transaction.get(contadorRef);
-          const atual = snap.exists() ? (snap.data().atual ?? 0) : 0;
-
-          const proximo = atual + 1;
-          const novoNumero = String(proximo).padStart(2, "0");
-
-          transaction.set(contadorRef, { atual: proximo }, { merge: true });
-
-          const novoDocRef = doc(collection(db, "recibos"));
-          transaction.set(novoDocRef, {
-            data, paciente, cpf, servico, valor,
-            telefone: telefone || null,
-            email: email || null,
-            numero: novoNumero,
-            criadoEm: serverTimestamp()
-          });
-        });
-
-        setOk("Recibo adicionado com sucesso.");
-      }
-
-      cancelarEdicao();
-    }catch(err){
-      console.error(err);
-      setErro("Erro ao salvar recibo. Verifique permissões (rules) e tente novamente.");
-      chipStatus.className = "chip err";
-      chipStatus.textContent = "Status: verifique regras/permissões";
-    }finally{
-      setLoading(false);
-    }
-  });
-
-  // ====== REMOVER ======
-  async function removerRecibo(id){
-    limparMensagens();
-    const ok = confirm("Deseja realmente remover este recibo? Essa ação não pode ser desfeita.");
-    if(!ok) return;
-
-    try{
-      setLoading(true, "removendo…");
-      await deleteDoc(doc(db,"recibos",id));
-      setOk("Recibo removido.");
-    }catch(err){
-      console.error(err);
-      setErro("Erro ao remover. Verifique permissões (rules).");
-    }finally{
-      setLoading(false);
-    }
-  }
-
-  // ====== EXPORTAR CSV ======
-  btnExportar.addEventListener("click", ()=>{
-    const lista = consultaAtiva ? getRecibosFiltrados() : [];
-    if(lista.length === 0){
-      alert("Nenhum recibo para exportar. Faça uma consulta primeiro.");
-      return;
-    }
-    let csv = "Data;Paciente;CPF;Serviço;Valor;Nº Recibo;Telefone;Email\n";
-    lista.forEach(r=>{
-      const dataBR = formatarDataBR(r.data);
-      const valorNum = Number(r.valor);
-      const valorBR = (Number.isNaN(valorNum) ? "" : valorNum.toFixed(2)).replace(".", ",");
-      const pacienteCsv = String(r.paciente ?? "").replaceAll('"','""');
-      const servicoCsv = String(r.servico ?? "").replaceAll('"','""');
-      const tel = String(r.telefone ?? "");
-      const em = String(r.email ?? "");
-      csv += `"${dataBR}";"${pacienteCsv}";"${r.cpf ?? ""}";"${servicoCsv}";"${valorBR}";"${r.numero ?? ""}";"${tel}";"${em}"\n`;
-    });
-
-    const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `recibos_${new Date().toISOString().slice(0,10)}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  });
-
-  // ====== OPÇÃO 1: ENVIO 1-CLIQUE ======
-  function montarMensagemTexto(r){
-    const data = formatarDataBR(r.data);
-    const numero = r.numero ?? "";
-    const valor = formatarMoedaBR(r.valor);
-    const servico = r.servico ?? "";
-    const paciente = r.paciente ?? "";
-
-    // mensagem curta e objetiva (WhatsApp)
-    return `Olá, ${paciente}! Segue o recibo nº ${numero} (${data}).%0A` +
-           `Serviço: ${servico}%0A` +
-           `Valor: ${valor}%0A%0A` +
-           `Qualquer dúvida, estou à disposição.`;
-  }
-
-  function abrirWhatsApp(r){
-    const tel = somenteDigitos(r.telefone ?? "");
-    if(!tel){
-      alert("Este recibo não tem telefone cadastrado. Edite o recibo e preencha o telefone/WhatsApp.");
-      return;
-    }
-
-    // Se o usuário digitar 11 dígitos (DDD+celular), adicionamos 55 automaticamente.
-    // Se já tiver 12/13 (com 55), mantém.
-    let destino = tel;
-    if(destino.length === 10 || destino.length === 11){
-      destino = "55" + destino;
-    }
-
-    const texto = montarMensagemTexto(r);
-    // wa.me funciona bem em desktop e mobile
-    const url = `https://wa.me/${destino}?text=${texto}`;
-    window.open(url, "_blank", "noopener,noreferrer");
-  }
-
-  function abrirEmail(r){
-    const email = (r.email ?? "").trim();
-    if(!email){
-      alert("Este recibo não tem e-mail cadastrado. Edite o recibo e preencha o e-mail.");
-      return;
-    }
-
-    const data = formatarDataBR(r.data);
-    const numero = r.numero ?? "";
-    const valor = formatarMoedaBR(r.valor);
-    const servico = r.servico ?? "";
-    const paciente = r.paciente ?? "";
-
-    const assunto = encodeURIComponent(`Recibo nº ${numero} - ${data}`);
-    const corpo = encodeURIComponent(
-      `Olá, ${paciente}!\n\n` +
-      `Segue o recibo:\n` +
-      `Nº: ${numero}\n` +
-      `Data: ${data}\n` +
-      `Serviço: ${servico}\n` +
-      `Valor: ${valor}\n\n` +
-      `Qualquer dúvida, estou à disposição.\n`
-    );
-
-    const mailto = `mailto:${encodeURIComponent(email)}?subject=${assunto}&body=${corpo}`;
-    window.location.href = mailto;
-  }
-
-  // ====== MODAL (VER/IMPRIMIR) ======
-  function abrirRecibo(r){
-    limparMensagens();
-    reciboModalAtual = r;
-
-    reciboPreview.innerHTML = gerarHtmlRecibo(r);
-
-    // habilita/desabilita botões de envio conforme dados
-    btnEnviarWhats.disabled = !somenteDigitos(r.telefone ?? "");
-    btnEnviarEmail.disabled = !(String(r.email ?? "").trim());
-
-    modalBackdrop.style.display = "flex";
-    modalBackdrop.setAttribute("aria-hidden","false");
-  }
-
-  function fecharModal(){
-    modalBackdrop.style.display = "none";
-    modalBackdrop.setAttribute("aria-hidden","true");
-    reciboPreview.innerHTML = "";
-    reciboModalAtual = null;
-  }
-
-  btnFecharModal.addEventListener("click", fecharModal);
-  modalBackdrop.addEventListener("click", (e)=>{
-    if(e.target === modalBackdrop) fecharModal();
-  });
-
-  btnImprimir.addEventListener("click", ()=>window.print());
-
-  btnBaixarHtml.addEventListener("click", ()=>{
-    const content = `
-<!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Recibo</title>
-<style>
-  body{font-family:Arial,sans-serif;padding:18px}
-  .rec{border:1px dashed #ddd;border-radius:10px;padding:14px}
-  .t{font-weight:800;font-size:16px;margin-bottom:8px}
-  .l{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:6px 0}
-  .ass{margin-top:18px;display:flex;justify-content:flex-end}
-  .ass .ln{width:260px;border-top:1px solid #111;margin-top:30px;text-align:center;padding-top:6px;font-size:12px}
-</style>
-</head><body>${reciboPreview.innerHTML}</body></html>`.trim();
-
-    const blob = new Blob([content], { type:"text/html;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "recibo.html";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  });
-
-  btnEnviarWhats.addEventListener("click", ()=>{
-    if(!reciboModalAtual) return;
-    abrirWhatsApp(reciboModalAtual);
-  });
-
-  btnEnviarEmail.addEventListener("click", ()=>{
-    if(!reciboModalAtual) return;
-    abrirEmail(reciboModalAtual);
-  });
-
-  function gerarHtmlRecibo(r){
-    const data = escapeHtml(formatarDataBR(r.data));
-    const paciente = escapeHtml(r.paciente);
-    const cpf = escapeHtml(r.cpf);
-    const servico = escapeHtml(r.servico);
-    const valor = escapeHtml(formatarMoedaBR(r.valor));
-    const numero = escapeHtml(r.numero ?? "");
-
-    const tel = escapeHtml(somenteDigitos(r.telefone ?? ""));
-    const email = escapeHtml((r.email ?? "").trim());
-
-    return `
-      <div class="recibo-print rec">
-        <div class="titulo t">RECIBO Nº ${numero}</div>
-        <div class="linha l"><div><b>Data:</b> ${data}</div><div><b>CPF:</b> ${cpf}</div></div>
-        <div class="linha l"><div><b>Paciente:</b> ${paciente}</div></div>
-        <div class="linha l"><div><b>Serviço prestado:</b> ${servico}</div></div>
-        <div class="linha l"><div><b>Valor:</b> ${valor}</div></div>
-        ${(tel || email) ? `
-          <div class="linha l">
-            <div><b>WhatsApp:</b> ${tel || "-"}</div>
-            <div><b>E-mail:</b> ${email || "-"}</div>
-          </div>
-        ` : ""}
-        <div class="assinatura ass">
-          <div class="linha-ass ln">Assinatura / Carimbo</div>
-        </div>
-      </div>
-    `.trim();
-  }
-
-  // ====== INICIAL: não mostra recibos até consultar ======
-  renderTabela();
-
-  // ====== debounce busca já está configurado acima ======
-
-  // ====== AVISO do contador (opcional) ======
-  (async ()=>{
-    try{
-      const snap = await getDoc(contadorRef);
-      if(!snap.exists()){
-        setAviso("Primeiro uso: o contador de recibos será iniciado automaticamente ao salvar o 1º recibo (se as regras permitirem).");
-      }
-    }catch(_){}
-  })();
-</script>
-</body>
-</html>
+  const btn
