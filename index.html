@@ -14,7 +14,6 @@
       --cor-erro:#dc2626;
       --cor-ok:#16a34a;
       --cor-fundo:#f9fafb;
-      --cor-amarelo:#f59e0b;
     }
     *{box-sizing:border-box}
     body{
@@ -38,17 +37,11 @@
     .linha-topo{
       display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;
     }
-    .topo-direita{
-      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
-    }
+    .topo-direita{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
     .chip{
-      font-size:12px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid var(--cor-borda);
-      background:var(--cor-fundo);
-      color:var(--cor-texto-sec);
-      white-space:nowrap;
+      font-size:12px; padding:6px 10px; border-radius:999px;
+      border:1px solid var(--cor-borda); background:var(--cor-fundo);
+      color:var(--cor-texto-sec); white-space:nowrap;
     }
     .chip.ok{border-color:#bbf7d0;background:#f0fdf4;color:#166534}
     .chip.warn{border-color:#fde68a;background:#fffbeb;color:#92400e}
@@ -56,56 +49,35 @@
 
     form{
       display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
+      grid-template-columns:repeat(4,minmax(0,1fr));
       gap:12px 16px;
       margin-bottom:12px;
     }
     .campo{display:flex;flex-direction:column;gap:4px;font-size:13px}
     label{font-weight:600;color:var(--cor-texto-sec)}
-    input, textarea, select{
-      padding:7px 9px;
-      font-size:14px;
-      border-radius:6px;
-      border:1px solid var(--cor-borda);
+    input{
+      padding:7px 9px; font-size:14px; border-radius:6px; border:1px solid var(--cor-borda);
     }
-    input:focus, textarea:focus, select:focus{
+    input:focus{
       border-color:var(--cor-primaria);
       box-shadow:0 0 0 1px var(--cor-primaria-clara);
       outline:none;
     }
-    .linha-botoes-form{
-      display:flex;
-      align-items:flex-end;
-      gap:8px;
-      flex-wrap:wrap;
-    }
+    .linha-botoes-form{display:flex; align-items:flex-end; gap:8px; flex-wrap:wrap}
     button{
-      border-radius:6px;
-      border:none;
-      padding:8px 14px;
-      font-size:14px;
-      cursor:pointer;
-      font-weight:700;
+      border-radius:6px; border:none; padding:8px 14px; font-size:14px;
+      cursor:pointer; font-weight:700;
     }
     button:disabled{opacity:.6;cursor:not-allowed}
     .btn-primario{background:var(--cor-primaria);color:#fff}
     .btn-primario:hover{filter:brightness(.95)}
-    .btn-secundario{
-      background:#fff;color:var(--cor-texto);
-      border:1px solid var(--cor-borda);
-    }
+    .btn-secundario{background:#fff;color:var(--cor-texto);border:1px solid var(--cor-borda)}
     .btn-secundario:hover{background:var(--cor-fundo)}
-    .btn-alerta{
-      background:#fff;color:#991b1b;border:1px solid #fecaca;
-    }
+    .btn-alerta{background:#fff;color:#991b1b;border:1px solid #fecaca}
     .btn-alerta:hover{background:#fef2f2}
     .btn-pequeno{padding:4px 8px;font-size:12px}
 
-    .mensagens{
-      display:flex; flex-direction:column; gap:6px;
-      margin:8px 0 8px;
-      min-height:18px;
-    }
+    .mensagens{display:flex;flex-direction:column;gap:6px;margin:8px 0;min-height:18px}
     .msg{font-size:13px}
     .msg.erro{color:var(--cor-erro)}
     .msg.ok{color:var(--cor-ok)}
@@ -114,14 +86,9 @@
     .filtros{
       display:grid;
       grid-template-columns:2fr 1fr 1fr auto auto;
-      gap:8px;
-      align-items:end;
-      margin:8px 0 10px;
+      gap:8px; align-items:end; margin:8px 0 10px;
     }
     .filtros input{font-size:13px;padding:6px 8px}
-    .hint{
-      font-size:12px;color:var(--cor-texto-sec);margin-top:2px;
-    }
 
     table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
     th,td{border:1px solid var(--cor-borda);padding:6px 8px;text-align:left;vertical-align:top}
@@ -132,57 +99,54 @@
     .badge-qtd{font-size:12px;color:var(--cor-texto-sec)}
     .mini{font-size:12px;color:var(--cor-texto-sec)}
     .nowrap{white-space:nowrap}
+    .hint{font-size:12px;color:var(--cor-texto-sec);margin-top:2px}
 
-    /* Modal simples */
+    /* Modal */
     .modal-backdrop{
-      position:fixed; inset:0;
-      background:rgba(17,24,39,.55);
+      position:fixed; inset:0; background:rgba(17,24,39,.55);
       display:none; align-items:center; justify-content:center;
       padding:18px; z-index:9999;
     }
     .modal{
       width:min(920px, 100%);
-      background:#fff;
-      border-radius:12px;
+      background:#fff; border-radius:12px;
       box-shadow:0 18px 60px rgba(0,0,0,.25);
       overflow:hidden;
     }
     .modal-header{
-      padding:12px 14px;
-      background:var(--cor-fundo);
+      padding:12px 14px; background:var(--cor-fundo);
       border-bottom:1px solid var(--cor-borda);
       display:flex; align-items:center; justify-content:space-between; gap:10px;
     }
     .modal-header h2{margin:0;font-size:16px}
     .modal-body{padding:14px}
     .modal-footer{
-      padding:12px 14px;
-      border-top:1px solid var(--cor-borda);
-      display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap;
+      padding:12px 14px; border-top:1px solid var(--cor-borda);
+      display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap;
+      align-items:center;
     }
+    .modal-footer .grupo-esq,
+    .modal-footer .grupo-dir{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
     .recibo-print{
       border:1px dashed var(--cor-borda);
-      border-radius:10px;
-      padding:14px;
+      border-radius:10px; padding:14px;
     }
     .recibo-print .linha{
       display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
       margin:6px 0;
     }
-    .recibo-print .titulo{
-      font-weight:800; font-size:16px; margin-bottom:8px;
-    }
-    .recibo-print .assinatura{
-      margin-top:18px;
-      display:flex; justify-content:flex-end;
-    }
+    .recibo-print .titulo{font-weight:800;font-size:16px;margin-bottom:8px}
+    .recibo-print .assinatura{margin-top:18px;display:flex;justify-content:flex-end}
     .recibo-print .assinatura .linha-ass{
-      width:260px; border-top:1px solid var(--cor-texto); margin-top:30px;
-      text-align:center; padding-top:6px; font-size:12px;
+      width:260px; border-top:1px solid var(--cor-texto);
+      margin-top:30px; text-align:center; padding-top:6px; font-size:12px;
     }
 
-    @media (max-width:800px){
+    @media (max-width:900px){
       form{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width:800px){
       .filtros{grid-template-columns:1fr 1fr}
     }
     @media (max-width:600px){
@@ -208,10 +172,10 @@
     <div>
       <h1>Controle de Recibos</h1>
       <p class="descricao">
-        ✅ Melhorias: número do recibo <b>atômico</b> (sem duplicar), validação de CPF (dígitos),
-        exportação CSV compatível com Excel, consulta só exibe após Filtrar, busca com debounce,
-        botão Ver/Imprimir e UX mais segura.
-        <br><span class="mini">Obs.: regras do Firestore (segurança) precisam ser configuradas no console — este HTML melhora muito, mas regras são o que realmente protegem.</span>
+        ✅ Inclui: número atômico (sem duplicar), validação real de CPF, exportação CSV (Excel),
+        consulta só após Filtrar, busca com debounce, Ver/Imprimir e <b>Opção 1</b> de envio:
+        <b>WhatsApp e E-mail (1 clique)</b> com mensagem pronta.
+        <br><span class="mini">Obs.: envio 1-clique abre WhatsApp/Gmail para você confirmar o envio.</span>
       </p>
     </div>
     <div class="topo-direita nao-imprimir">
@@ -254,6 +218,19 @@
       <label for="valor">Valor (R$)</label>
       <input type="text" id="valor" inputmode="decimal" placeholder="Ex.: 150,00" required />
       <div class="hint">Aceita vírgula ou ponto. Salva como número.</div>
+    </div>
+
+    <!-- ✅ NOVOS CAMPOS (OPÇÃO 1) -->
+    <div class="campo">
+      <label for="telefone">Telefone/WhatsApp (com DDD)</label>
+      <input type="text" id="telefone" inputmode="tel" placeholder="Ex.: 11999999999" />
+      <div class="hint">Só números. Se preencher, libera “Enviar WhatsApp”.</div>
+    </div>
+
+    <div class="campo">
+      <label for="email">E-mail do cliente</label>
+      <input type="email" id="email" placeholder="Ex.: cliente@email.com" />
+      <div class="hint">Se preencher, libera “Enviar E-mail”.</div>
     </div>
 
     <div class="linha-botoes-form">
@@ -306,7 +283,7 @@
   </div>
 </div>
 
-<!-- Modal de visualização/impressão -->
+<!-- Modal de visualização/impressão + envio 1-clique -->
 <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
     <div class="modal-header">
@@ -315,10 +292,19 @@
     </div>
     <div class="modal-body">
       <div id="reciboPreview" class="recibo-print"></div>
+      <div class="hint" style="margin-top:8px">
+        Dica: use os botões abaixo para abrir WhatsApp ou e-mail com a mensagem pronta (1 clique).
+      </div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn-secundario" id="btnImprimir">Imprimir</button>
-      <button type="button" class="btn-secundario" id="btnBaixarHtml">Baixar HTML</button>
+      <div class="grupo-esq">
+        <button type="button" class="btn-secundario" id="btnEnviarWhats">Enviar WhatsApp</button>
+        <button type="button" class="btn-secundario" id="btnEnviarEmail">Enviar E-mail</button>
+      </div>
+      <div class="grupo-dir">
+        <button type="button" class="btn-secundario" id="btnImprimir">Imprimir</button>
+        <button type="button" class="btn-secundario" id="btnBaixarHtml">Baixar HTML</button>
+      </div>
     </div>
   </div>
 </div>
@@ -328,7 +314,6 @@
   import {
     getFirestore,
     collection,
-    addDoc,
     deleteDoc,
     updateDoc,
     doc,
@@ -353,10 +338,9 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  const colRecibos = collection(db, "recibos");
 
-  // Contador atômico para número do recibo
-  const contadorRef = doc(db, "config", "contadorRecibos");
+  const colRecibos = collection(db, "recibos");
+  const contadorRef = doc(db, "config", "contadorRecibos"); // contador atômico
 
   // ====== ESTADO ======
   let recibos = [];
@@ -366,17 +350,23 @@
   let editingId = null;
   let editingNumero = null;
 
+  // para “Opção 1” (envio 1-clique no modal)
+  let reciboModalAtual = null;
+
   // ====== ELEMENTOS ======
   const form = document.getElementById("reciboForm");
   const tabelaBody = document.querySelector("#tabelaRecibos tbody");
   const totalRecibos = document.getElementById("totalRecibos");
   const infoQuantidade = document.getElementById("infoQuantidade");
+
   const inputBuscaTexto = document.getElementById("buscaTexto");
   const inputDataInicio = document.getElementById("dataInicio");
   const inputDataFim = document.getElementById("dataFim");
 
   const inputCpf = document.getElementById("cpf");
   const inputValor = document.getElementById("valor");
+  const inputTelefone = document.getElementById("telefone"); // ✅ novo
+  const inputEmail = document.getElementById("email");       // ✅ novo
 
   const btnPrincipal = document.getElementById("btnPrincipal");
   const btnCancelarEdicao = document.getElementById("btnCancelarEdicao");
@@ -398,6 +388,8 @@
   const btnFecharModal = document.getElementById("btnFecharModal");
   const btnImprimir = document.getElementById("btnImprimir");
   const btnBaixarHtml = document.getElementById("btnBaixarHtml");
+  const btnEnviarWhats = document.getElementById("btnEnviarWhats");
+  const btnEnviarEmail = document.getElementById("btnEnviarEmail");
 
   // ====== HELPERS UI ======
   function limparMensagens(){
@@ -440,13 +432,11 @@
     const [ano,mes,dia] = isoDate.split("-");
     return `${dia}/${mes}/${ano}`;
   }
-
   function formatarMoedaBR(valor){
     const n = Number(valor);
     if(Number.isNaN(n)) return "R$ 0,00";
     return n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
   }
-
   function normalizarTexto(s){
     return (s ?? "")
       .toString()
@@ -459,9 +449,7 @@
   function parseValorBR(str){
     if(!str) return NaN;
     let v = str.toString().trim();
-    // remove "R$" e espaços
     v = v.replace(/[R$\s]/g,"");
-    // se tiver vírgula e ponto, assume formato BR (milhar com ponto, decimal com vírgula)
     const temVirgula = v.includes(",");
     const temPonto = v.includes(".");
     if(temVirgula && temPonto){
@@ -469,18 +457,16 @@
     }else if(temVirgula && !temPonto){
       v = v.replace(",",".");
     }
-    // remove qualquer coisa que não seja número, ponto ou sinal
     v = v.replace(/[^0-9.\-]/g,"");
     return parseFloat(v);
   }
 
   // ====== CPF (VALIDAÇÃO REAL) ======
   function somenteDigitos(s){ return (s ?? "").replace(/\D/g,""); }
-
   function validarCPFCompleto(cpfFormatado){
     const cpf = somenteDigitos(cpfFormatado);
     if(cpf.length !== 11) return false;
-    if(/^(\d)\1{10}$/.test(cpf)) return false; // tudo igual
+    if(/^(\d)\1{10}$/.test(cpf)) return false;
 
     const calcDig = (base, fatorInicial) => {
       let soma = 0;
@@ -511,7 +497,12 @@
     }
   });
 
-  // máscara/limpeza do valor (não agressiva, só evita letras)
+  // telefone: só números
+  inputTelefone.addEventListener("input", function(){
+    this.value = somenteDigitos(this.value).slice(0, 13); // até 13 para +55 + DDD + número (sem +)
+  });
+
+  // valor: limpa letras
   inputValor.addEventListener("input", function(){
     this.value = this.value.replace(/[^0-9.,\sR$]/g,"");
   });
@@ -623,6 +614,9 @@
     document.getElementById("servico").value = r.servico;
     inputValor.value = Number(r.valor).toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2});
 
+    inputTelefone.value = somenteDigitos(r.telefone ?? "");
+    inputEmail.value = r.email ?? "";
+
     btnPrincipal.textContent = "Salvar alterações";
     btnCancelarEdicao.style.display = "inline-block";
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -654,7 +648,7 @@
 
   btnRecarregar.addEventListener("click", ()=>location.reload());
 
-  // ====== SUBMIT (ADD / UPDATE) ======
+  // ====== SALVAR (ADD / UPDATE) ======
   form.addEventListener("submit", async (e)=>{
     e.preventDefault();
     limparMensagens();
@@ -665,8 +659,11 @@
     const servico = document.getElementById("servico").value.trim();
     const valorStr = inputValor.value.trim();
 
+    const telefone = somenteDigitos(inputTelefone.value.trim()); // ✅ novo
+    const email = (inputEmail.value.trim() || "");              // ✅ novo
+
     if(!data || !paciente || !cpf || !servico || !valorStr){
-      setErro("Preencha todos os campos.");
+      setErro("Preencha todos os campos obrigatórios.");
       return;
     }
     if(!validarCPFCompleto(cpf)){
@@ -676,6 +673,18 @@
     const valor = parseValorBR(valorStr);
     if(Number.isNaN(valor) || valor < 0){
       setErro("Informe um valor válido (ex.: 150,00).");
+      return;
+    }
+
+    // telefone opcional: se preenchido, valida tamanho mínimo
+    if(telefone && telefone.length < 10){
+      setErro("Telefone muito curto. Use DDD + número (somente números).");
+      return;
+    }
+
+    // e-mail opcional: input type=email já valida, mas garantimos básico:
+    if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      setErro("E-mail inválido.");
       return;
     }
 
@@ -692,30 +701,29 @@
 
         await updateDoc(doc(db,"recibos",editingId),{
           data, paciente, cpf, servico, valor,
+          telefone: telefone || null,
+          email: email || null,
           numero: editingNumero,
           atualizadoEm: serverTimestamp()
         });
 
         setOk("Alterações salvas com sucesso.");
       }else{
-        // Número atômico: transação
+        // ✅ contador atômico robusto (1º uso sem erro)
         await runTransaction(db, async (transaction)=>{
           const snap = await transaction.get(contadorRef);
-          let atual = 0;
-          if(!snap.exists()){
-            transaction.set(contadorRef, { atual: 0 });
-            atual = 0;
-          }else{
-            atual = snap.data().atual ?? 0;
-          }
+          const atual = snap.exists() ? (snap.data().atual ?? 0) : 0;
+
           const proximo = atual + 1;
           const novoNumero = String(proximo).padStart(2, "0");
 
-          transaction.update(contadorRef, { atual: proximo });
+          transaction.set(contadorRef, { atual: proximo }, { merge: true });
 
           const novoDocRef = doc(collection(db, "recibos"));
           transaction.set(novoDocRef, {
             data, paciente, cpf, servico, valor,
+            telefone: telefone || null,
+            email: email || null,
             numero: novoNumero,
             criadoEm: serverTimestamp()
           });
@@ -725,8 +733,6 @@
       }
 
       cancelarEdicao();
-      // se usuário quiser ver a tabela logo após inserir, mantenha como estava:
-      // (não força consultaAtiva = true)
     }catch(err){
       console.error(err);
       setErro("Erro ao salvar recibo. Verifique permissões (rules) e tente novamente.");
@@ -762,14 +768,16 @@
       alert("Nenhum recibo para exportar. Faça uma consulta primeiro.");
       return;
     }
-    // Dica: Excel no PT-BR costuma ler melhor CSV com ; (ponto e vírgula)
-    let csv = "Data;Paciente;CPF;Serviço;Valor;Nº Recibo\n";
+    let csv = "Data;Paciente;CPF;Serviço;Valor;Nº Recibo;Telefone;Email\n";
     lista.forEach(r=>{
       const dataBR = formatarDataBR(r.data);
       const valorNum = Number(r.valor);
-      // valor com vírgula como decimal (texto), mas sem "R$"
       const valorBR = (Number.isNaN(valorNum) ? "" : valorNum.toFixed(2)).replace(".", ",");
-      csv += `"${dataBR}";"${String(r.paciente).replaceAll('"','""')}";"${r.cpf}";"${String(r.servico).replaceAll('"','""')}";"${valorBR}";"${r.numero ?? ""}"\n`;
+      const pacienteCsv = String(r.paciente ?? "").replaceAll('"','""');
+      const servicoCsv = String(r.servico ?? "").replaceAll('"','""');
+      const tel = String(r.telefone ?? "");
+      const em = String(r.email ?? "");
+      csv += `"${dataBR}";"${pacienteCsv}";"${r.cpf ?? ""}";"${servicoCsv}";"${valorBR}";"${r.numero ?? ""}";"${tel}";"${em}"\n`;
     });
 
     const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
@@ -781,11 +789,80 @@
     document.body.removeChild(link);
   });
 
-  // ====== VER/IMPRIMIR ======
+  // ====== OPÇÃO 1: ENVIO 1-CLIQUE ======
+  function montarMensagemTexto(r){
+    const data = formatarDataBR(r.data);
+    const numero = r.numero ?? "";
+    const valor = formatarMoedaBR(r.valor);
+    const servico = r.servico ?? "";
+    const paciente = r.paciente ?? "";
+
+    // mensagem curta e objetiva (WhatsApp)
+    return `Olá, ${paciente}! Segue o recibo nº ${numero} (${data}).%0A` +
+           `Serviço: ${servico}%0A` +
+           `Valor: ${valor}%0A%0A` +
+           `Qualquer dúvida, estou à disposição.`;
+  }
+
+  function abrirWhatsApp(r){
+    const tel = somenteDigitos(r.telefone ?? "");
+    if(!tel){
+      alert("Este recibo não tem telefone cadastrado. Edite o recibo e preencha o telefone/WhatsApp.");
+      return;
+    }
+
+    // Se o usuário digitar 11 dígitos (DDD+celular), adicionamos 55 automaticamente.
+    // Se já tiver 12/13 (com 55), mantém.
+    let destino = tel;
+    if(destino.length === 10 || destino.length === 11){
+      destino = "55" + destino;
+    }
+
+    const texto = montarMensagemTexto(r);
+    // wa.me funciona bem em desktop e mobile
+    const url = `https://wa.me/${destino}?text=${texto}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
+  function abrirEmail(r){
+    const email = (r.email ?? "").trim();
+    if(!email){
+      alert("Este recibo não tem e-mail cadastrado. Edite o recibo e preencha o e-mail.");
+      return;
+    }
+
+    const data = formatarDataBR(r.data);
+    const numero = r.numero ?? "";
+    const valor = formatarMoedaBR(r.valor);
+    const servico = r.servico ?? "";
+    const paciente = r.paciente ?? "";
+
+    const assunto = encodeURIComponent(`Recibo nº ${numero} - ${data}`);
+    const corpo = encodeURIComponent(
+      `Olá, ${paciente}!\n\n` +
+      `Segue o recibo:\n` +
+      `Nº: ${numero}\n` +
+      `Data: ${data}\n` +
+      `Serviço: ${servico}\n` +
+      `Valor: ${valor}\n\n` +
+      `Qualquer dúvida, estou à disposição.\n`
+    );
+
+    const mailto = `mailto:${encodeURIComponent(email)}?subject=${assunto}&body=${corpo}`;
+    window.location.href = mailto;
+  }
+
+  // ====== MODAL (VER/IMPRIMIR) ======
   function abrirRecibo(r){
     limparMensagens();
-    const html = gerarHtmlRecibo(r);
-    reciboPreview.innerHTML = html;
+    reciboModalAtual = r;
+
+    reciboPreview.innerHTML = gerarHtmlRecibo(r);
+
+    // habilita/desabilita botões de envio conforme dados
+    btnEnviarWhats.disabled = !somenteDigitos(r.telefone ?? "");
+    btnEnviarEmail.disabled = !(String(r.email ?? "").trim());
+
     modalBackdrop.style.display = "flex";
     modalBackdrop.setAttribute("aria-hidden","false");
   }
@@ -794,6 +871,7 @@
     modalBackdrop.style.display = "none";
     modalBackdrop.setAttribute("aria-hidden","true");
     reciboPreview.innerHTML = "";
+    reciboModalAtual = null;
   }
 
   btnFecharModal.addEventListener("click", fecharModal);
@@ -801,9 +879,7 @@
     if(e.target === modalBackdrop) fecharModal();
   });
 
-  btnImprimir.addEventListener("click", ()=>{
-    window.print();
-  });
+  btnImprimir.addEventListener("click", ()=>window.print());
 
   btnBaixarHtml.addEventListener("click", ()=>{
     const content = `
@@ -829,6 +905,16 @@
     document.body.removeChild(link);
   });
 
+  btnEnviarWhats.addEventListener("click", ()=>{
+    if(!reciboModalAtual) return;
+    abrirWhatsApp(reciboModalAtual);
+  });
+
+  btnEnviarEmail.addEventListener("click", ()=>{
+    if(!reciboModalAtual) return;
+    abrirEmail(reciboModalAtual);
+  });
+
   function gerarHtmlRecibo(r){
     const data = escapeHtml(formatarDataBR(r.data));
     const paciente = escapeHtml(r.paciente);
@@ -837,13 +923,22 @@
     const valor = escapeHtml(formatarMoedaBR(r.valor));
     const numero = escapeHtml(r.numero ?? "");
 
+    const tel = escapeHtml(somenteDigitos(r.telefone ?? ""));
+    const email = escapeHtml((r.email ?? "").trim());
+
     return `
-      <div class="recibo-print recibo-print__inner rec">
+      <div class="recibo-print rec">
         <div class="titulo t">RECIBO Nº ${numero}</div>
         <div class="linha l"><div><b>Data:</b> ${data}</div><div><b>CPF:</b> ${cpf}</div></div>
         <div class="linha l"><div><b>Paciente:</b> ${paciente}</div></div>
         <div class="linha l"><div><b>Serviço prestado:</b> ${servico}</div></div>
         <div class="linha l"><div><b>Valor:</b> ${valor}</div></div>
+        ${(tel || email) ? `
+          <div class="linha l">
+            <div><b>WhatsApp:</b> ${tel || "-"}</div>
+            <div><b>E-mail:</b> ${email || "-"}</div>
+          </div>
+        ` : ""}
         <div class="assinatura ass">
           <div class="linha-ass ln">Assinatura / Carimbo</div>
         </div>
@@ -854,14 +949,13 @@
   // ====== INICIAL: não mostra recibos até consultar ======
   renderTabela();
 
-  // ====== (OPCIONAL) Checa contador existe e cria se não existir (sem travar) ======
-  // Ajuda no primeiro uso.
+  // ====== debounce busca já está configurado acima ======
+
+  // ====== AVISO do contador (opcional) ======
   (async ()=>{
     try{
       const snap = await getDoc(contadorRef);
       if(!snap.exists()){
-        // não cria aqui para não depender de permissão,
-        // a transação cria automaticamente se permitido.
         setAviso("Primeiro uso: o contador de recibos será iniciado automaticamente ao salvar o 1º recibo (se as regras permitirem).");
       }
     }catch(_){}
