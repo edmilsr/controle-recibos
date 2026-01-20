@@ -206,12 +206,12 @@
   <div class="secao-titulo">Incluir novo recibo</div>
 
   <div class="mensagens">
-    <div id="msgErro" class="msg erro"></div>
-    <div id="msgOk" class="msg ok"></div>
-    <div id="msgAviso" class="msg aviso"></div>
+    <div id="msgErro" class="msg erro" aria-live="polite"></div>
+    <div id="msgOk" class="msg ok" aria-live="polite"></div>
+    <div id="msgAviso" class="msg aviso" aria-live="polite"></div>
   </div>
 
-  <form id="reciboForm">
+  <form id="reciboForm" autocomplete="off">
     <div class="campo">
       <label for="data">Data</label>
       <input type="date" id="data" required />
@@ -224,7 +224,7 @@
 
     <div class="campo">
       <label for="cpf">CPF (000.000.000-00)</label>
-      <input type="text" id="cpf" maxlength="14" required />
+      <input type="text" id="cpf" maxlength="14" required placeholder="000.000.000-00" />
       <div class="hint">Validação completa (dígitos verificadores).</div>
     </div>
 
@@ -271,7 +271,7 @@
     <button type="button" class="btn-secundario" id="btnLimpar">Limpar filtros</button>
   </div>
 
-  <table id="tabelaRecibos">
+  <table id="tabelaRecibos" aria-live="polite">
     <thead>
       <tr>
         <th>Data</th>
@@ -298,10 +298,10 @@
 
 <!-- Modal do recibo (impressão e envio) -->
 <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo" id="modal">
     <div class="modal-header">
       <h2 id="modalTitulo">Recibo</h2>
-      <button type="button" class="btn-secundario btn-pequeno" id="btnFecharModal">Fechar</button>
+      <button type="button" class="btn-secundario btn-pequeno" id="btnFecharModal" aria-label="Fechar recibo">Fechar</button>
     </div>
     <div class="modal-body">
       <div id="reciboPreview" class="recibo-print"></div>
@@ -326,9 +326,11 @@
   import {
     getFirestore,
     collection,
+    doc,
+    setDoc,
+    addDoc,
     deleteDoc,
     updateDoc,
-    doc,
     onSnapshot,
     query,
     orderBy,
@@ -338,6 +340,7 @@
   } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
   // ====== CONFIG FIREBASE ======
+  // Nota: mantenha regras do Firestore restritivas no console (autenticação/validação).
   const firebaseConfig = {
     apiKey: "AIzaSyB05L6llPbcNsJ_SfYn2mR31Cxx1M8dzH4",
     authDomain: "controle-recibos-f7538.firebaseapp.com",
@@ -364,6 +367,8 @@
 
   let reciboModalAtual = null; // para envio/print
 
+  let unsubscribeSnapshot = null;
+
   // ====== ELEMENTOS ======
   const form = document.getElementById("reciboForm");
   const tabelaBody = document.querySelector("#tabelaRecibos tbody");
@@ -377,6 +382,9 @@
   const inputCpf = document.getElementById("cpf");
   const inputValor = document.getElementById("valor");
   const inputTelefone = document.getElementById("telefone");
+  const inputPaciente = document.getElementById("paciente");
+  const inputServico = document.getElementById("servico");
+  const inputData = document.getElementById("data");
 
   const btnPrincipal = document.getElementById("btnPrincipal");
   const btnCancelarEdicao = document.getElementById("btnCancelarEdicao");
@@ -388,4 +396,556 @@
   const chipStatus = document.getElementById("chipStatus");
   const btnRecarregar = document.getElementById("btnRecarregar");
 
-  const btn
+  const btnFiltrar = document.getElementById("btnFiltrar");
+  const btnLimpar = document.getElementById("btnLimpar");
+  const btnExportar = document.getElementById("btnExportar");
+
+  const modalBackdrop = document.getElementById("modalBackdrop");
+  const modal = document.getElementById("modal");
+  const btnFecharModal = document.getElementById("btnFecharModal");
+  const reciboPreview = document.getElementById("reciboPreview");
+  const btnEnviarWhats = document.getElementById("btnEnviarWhats");
+  const btnImprimir = document.getElementById("btnImprimir");
+  const btnBaixarHtml = document.getElementById("btnBaixarHtml");
+
+  // ====== HELPERS ======
+  function showMsg(text, type = "ok", timeout = 4000) {
+    clearMsgs();
+    if (type === "erro") msgErro.textContent = text;
+    else if (type === "aviso") msgAviso.textContent = text;
+    else msgOk.textContent = text;
+    if (timeout > 0) {
+      setTimeout(() => clearMsgs(), timeout);
+    }
+  }
+  function clearMsgs() {
+    msgErro.textContent = "";
+    msgOk.textContent = "";
+    msgAviso.textContent = "";
+  }
+
+  function validarCPF(cpf) {
+    cpf = (cpf || "").replace(/\D/g,'');
+    if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+    const calc = (t) => {
+      let sum = 0;
+      for (let i = 0; i < t; i++) sum += parseInt(cpf[i], 10) * (t + 1 - i);
+      let d = 11 - (sum % 11);
+      return d >= 10 ? 0 : d;
+    };
+    return calc(9) === parseInt(cpf[9], 10) && calc(10) === parseInt(cpf[10], 10);
+  }
+
+  function normalizePhoneForWhats(phone) {
+    if (!phone) return null;
+    let digits = phone.replace(/\D/g,'');
+    if (digits.length === 10 || digits.length === 11) {
+      if (!digits.startsWith('55')) digits = '55' + digits;
+    }
+    return '+' + digits;
+  }
+
+  function whatsappUrl(phonePlus, message = '') {
+    if (!phonePlus) return null;
+    const phone = phonePlus.replace(/\D/g,'');
+    return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  }
+
+  function parseCurrencyToNumber(str) {
+    if (str === null || str === undefined) return 0;
+    str = String(str).trim().replace(/\./g,'').replace(',', '.');
+    const n = parseFloat(str);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  const formatCurrencyBR = (v) =>
+    new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' }).format(v);
+
+  function formatDateBR(isoYMD) {
+    // isoYMD: "YYYY-MM-DD"
+    if (!isoYMD) return "";
+    try {
+      const parts = isoYMD.split("-");
+      if (parts.length === 3) {
+        const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        return d.toLocaleDateString('pt-BR');
+      }
+      const d = new Date(isoYMD);
+      return isNaN(d) ? isoYMD : d.toLocaleDateString('pt-BR');
+    } catch {
+      return isoYMD;
+    }
+  }
+
+  function debounce(fn, wait = 300) {
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
+  }
+
+  // ====== RENDER ======
+  function renderTable(list) {
+    tabelaBody.innerHTML = "";
+    let total = 0;
+    list.forEach(r => {
+      const tr = document.createElement("tr");
+
+      const tdData = document.createElement("td");
+      tdData.textContent = formatDateBR(r.data);
+      tr.appendChild(tdData);
+
+      const tdPaciente = document.createElement("td");
+      tdPaciente.textContent = r.paciente || "";
+      tr.appendChild(tdPaciente);
+
+      const tdCpf = document.createElement("td");
+      tdCpf.textContent = r.cpf || "";
+      tr.appendChild(tdCpf);
+
+      const tdServico = document.createElement("td");
+      tdServico.textContent = r.servico || "";
+      tr.appendChild(tdServico);
+
+      const tdValor = document.createElement("td");
+      tdValor.className = "nowrap";
+      tdValor.textContent = formatCurrencyBR(Number(r.valor || 0));
+      tr.appendChild(tdValor);
+
+      const tdNumero = document.createElement("td");
+      tdNumero.className = "nowrap";
+      tdNumero.textContent = r.numero != null ? String(r.numero) : "";
+      tr.appendChild(tdNumero);
+
+      const tdAcoes = document.createElement("td");
+      tdAcoes.className = "nowrap";
+      const btnVer = document.createElement("button");
+      btnVer.type = "button";
+      btnVer.className = "btn-secundario btn-pequeno";
+      btnVer.textContent = "Ver";
+      btnVer.addEventListener("click", () => abrirModalRecibo(r));
+      tdAcoes.appendChild(btnVer);
+
+      const btnEditar = document.createElement("button");
+      btnEditar.type = "button";
+      btnEditar.className = "btn-primario btn-pequeno";
+      btnEditar.textContent = "Editar";
+      btnEditar.style.marginLeft = "6px";
+      btnEditar.addEventListener("click", () => iniciarEdicao(r));
+      tdAcoes.appendChild(btnEditar);
+
+      const btnExcluir = document.createElement("button");
+      btnExcluir.type = "button";
+      btnExcluir.className = "btn-alerta btn-pequeno";
+      btnExcluir.textContent = "Excluir";
+      btnExcluir.style.marginLeft = "6px";
+      btnExcluir.addEventListener("click", () => excluirRecibo(r));
+      tdAcoes.appendChild(btnExcluir);
+
+      const btnWhats = document.createElement("button");
+      btnWhats.type = "button";
+      btnWhats.className = "btn-secundario btn-pequeno";
+      btnWhats.textContent = "Whats";
+      btnWhats.style.marginLeft = "6px";
+      btnWhats.addEventListener("click", () => abrirWhatsDirecto(r));
+      tdAcoes.appendChild(btnWhats);
+
+      tr.appendChild(tdAcoes);
+      tabelaBody.appendChild(tr);
+
+      total += Number(r.valor || 0);
+    });
+
+    infoQuantidade.textContent = `${list.length} recibo(s)`;
+    totalRecibos.textContent = `Total: ${formatCurrencyBR(total)}`;
+  }
+
+  function aplicarFiltros() {
+    const texto = (filtros.texto || "").toLowerCase().trim();
+    const start = filtros.dataInicio || "";
+    const end = filtros.dataFim || "";
+    const filtered = recibos.filter(r => {
+      if (start && r.data < start) return false;
+      if (end && r.data > end) return false;
+      if (!texto) return true;
+      // checar paciente, cpf, servico, numero
+      if ((r.paciente || "").toLowerCase().includes(texto)) return true;
+      if ((r.cpf || "").toLowerCase().includes(texto)) return true;
+      if ((r.servico || "").toLowerCase().includes(texto)) return true;
+      if (String(r.numero || "").toLowerCase().includes(texto)) return true;
+      return false;
+    });
+    renderTable(filtered);
+  }
+
+  // ====== FIRESTORE: LISTENER ======
+  function iniciarEscutaRecibos() {
+    if (unsubscribeSnapshot) unsubscribeSnapshot();
+    chipStatus.textContent = "Status: conectando…";
+    chipStatus.className = "chip warn";
+    const q = query(colRecibos, orderBy("data", "desc"), orderBy("numero", "desc"));
+    unsubscribeSnapshot = onSnapshot(q, snap => {
+      recibos = snap.docs.map(d => ({ id: d.id, ...(d.data() || {}) }));
+      aplicarFiltros();
+      chipStatus.textContent = "Status: online";
+      chipStatus.className = "chip ok";
+    }, err => {
+      console.error("Erro snapshot:", err);
+      showMsg("Erro ao conectar com o banco.", "erro", 6000);
+      chipStatus.textContent = "Status: erro";
+      chipStatus.className = "chip err";
+    });
+  }
+
+  // ====== CRUD ======
+  async function salvarRecibo(e) {
+    e && e.preventDefault();
+    clearMsgs();
+
+    const paciente = inputPaciente.value.trim();
+    const cpfRaw = inputCpf.value.trim();
+    const cpfOnly = (cpfRaw || "").replace(/\D/g, '');
+    const servico = inputServico.value.trim();
+    const dataVal = inputData.value;
+    const valorNum = parseCurrencyToNumber(inputValor.value);
+    const telefone = inputTelefone.value.trim();
+
+    // validações
+    if (!paciente || !servico || !dataVal) {
+      showMsg("Preencha data, paciente e serviço.", "erro");
+      return;
+    }
+    if (!validarCPF(cpfOnly)) {
+      showMsg("CPF inválido.", "erro");
+      return;
+    }
+    if (isNaN(valorNum) || valorNum <= 0) {
+      showMsg("Valor inválido.", "erro");
+      return;
+    }
+
+    btnPrincipal.disabled = true;
+    btnPrincipal.textContent = editingId ? "Salvando..." : "Adicionando...";
+
+    try {
+      if (editingId) {
+        // editar existente
+        const ref = doc(db, "recibos", editingId);
+        await updateDoc(ref, {
+          paciente,
+          cpf: formatCpf(cpfOnly),
+          servico,
+          valor: valorNum,
+          telefone: telefone || null,
+          data: dataVal,
+          updatedAt: serverTimestamp()
+        });
+        showMsg("Recibo atualizado.", "ok");
+      } else {
+        // criar novo com contador atômico em transaction
+        await runTransaction(db, async (transaction) => {
+          const snapCtr = await transaction.get(contadorRef);
+          let next = 1;
+          if (snapCtr.exists()) {
+            const v = snapCtr.data().valor;
+            next = (Number(v) || 0) + 1;
+          }
+          transaction.set(contadorRef, { valor: next }, { merge: true });
+          const newDocRef = doc(colRecibos); // novo doc com id gerado
+          transaction.set(newDocRef, {
+            paciente,
+            cpf: formatCpf(cpfOnly),
+            servico,
+            valor: valorNum,
+            telefone: telefone || null,
+            data: dataVal,
+            numero: next,
+            createdAt: serverTimestamp()
+          });
+        });
+        showMsg("Recibo adicionado.", "ok");
+      }
+      form.reset();
+      cancelarEdicaoSilencioso();
+    } catch (err) {
+      console.error("Erro salvar:", err);
+      showMsg("Erro ao salvar recibo.", "erro", 6000);
+    } finally {
+      btnPrincipal.disabled = false;
+      btnPrincipal.textContent = "Adicionar recibo";
+    }
+  }
+
+  function formatCpf(cpf8) {
+    const cpf = (cpf8 || "").replace(/\D/g, '');
+    if (cpf.length !== 11) return cpf;
+    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+  }
+
+  function iniciarEdicao(r) {
+    editingId = r.id;
+    editingNumero = r.numero;
+    inputData.value = r.data || "";
+    inputPaciente.value = r.paciente || "";
+    inputCpf.value = r.cpf || "";
+    inputServico.value = r.servico || "";
+    inputValor.value = (r.valor != null) ? formatCurrencyBR(Number(r.valor)).replace(/\s|R\$| /gi,'') : "";
+    inputTelefone.value = r.telefone || "";
+    btnCancelarEdicao.style.display = "inline-block";
+    btnPrincipal.textContent = "Salvar alteração";
+    btnPrincipal.classList.add("btn-primario");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function cancelarEdicaoSilencioso() {
+    editingId = null;
+    editingNumero = null;
+    form.reset();
+    btnCancelarEdicao.style.display = "none";
+    btnPrincipal.textContent = "Adicionar recibo";
+  }
+
+  function cancelarEdicao() {
+    cancelarEdicaoSilencioso();
+    showMsg("Edição cancelada.", "aviso", 2500);
+  }
+
+  async function excluirRecibo(r) {
+    if (!confirm(`Excluir recibo nº ${r.numero} (${r.paciente})? Esta ação não pode ser desfeita.`)) return;
+    try {
+      await deleteDoc(doc(db, "recibos", r.id));
+      showMsg("Recibo excluído.", "ok");
+    } catch (err) {
+      console.error("Erro excluir:", err);
+      showMsg("Erro ao excluir recibo.", "erro", 6000);
+    }
+  }
+
+  // ====== MODAL / IMPRESSÃO / WHATSAPP ======
+  let previouslyFocused = null;
+
+  function abrirModalRecibo(r) {
+    reciboModalAtual = r;
+    reciboPreview.innerHTML = gerarHtmlRecibo(r);
+    abrirModal();
+  }
+
+  function gerarHtmlRecibo(r) {
+    const telefoneVisivel = r.telefone ? r.telefone : "—";
+    const valorFormat = formatCurrencyBR(Number(r.valor || 0));
+    const dataFormat = formatDateBR(r.data || "");
+    return `
+      <div>
+        <div class="titulo">RECIBO Nº ${r.numero || "—"}</div>
+        <div class="linha"><div><strong>Data:</strong> ${dataFormat}</div><div><strong>Valor:</strong> ${valorFormat}</div></div>
+        <div class="linha"><div><strong>Paciente:</strong> ${escapeHtml(r.paciente || "")}</div></div>
+        <div class="linha"><div><strong>CPF:</strong> ${escapeHtml(r.cpf || "")}</div></div>
+        <div class="linha"><div><strong>Serviço:</strong> ${escapeHtml(r.servico || "")}</div></div>
+        <div class="linha"><div><strong>Telefone:</strong> ${escapeHtml(telefoneVisivel)}</div></div>
+        <div class="assinatura"><div class="linha-ass">Assinatura</div></div>
+      </div>
+    `;
+  }
+
+  function escapeHtml(s) {
+    return String(s || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function abrirModal() {
+    previouslyFocused = document.activeElement;
+    modalBackdrop.style.display = "flex";
+    modalBackdrop.setAttribute("aria-hidden", "false");
+    // foco inicial
+    setTimeout(() => btnFecharModal.focus(), 50);
+    document.addEventListener("keydown", onKeyDownModal);
+  }
+
+  function fecharModal() {
+    modalBackdrop.style.display = "none";
+    modalBackdrop.setAttribute("aria-hidden", "true");
+    document.removeEventListener("keydown", onKeyDownModal);
+    if (previouslyFocused) previouslyFocused.focus();
+    reciboModalAtual = null;
+  }
+
+  function onKeyDownModal(e) {
+    if (e.key === "Escape") {
+      fecharModal();
+      return;
+    }
+    if (e.key === "Tab") {
+      // trap focus inside modal
+      const focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }
+
+  btnFecharModal.addEventListener("click", fecharModal);
+  modalBackdrop.addEventListener("click", (ev) => {
+    if (ev.target === modalBackdrop) fecharModal();
+  });
+
+  btnImprimir.addEventListener("click", () => {
+    // abre print apenas do modal (CSS @media print já preparado)
+    window.print();
+  });
+
+  btnBaixarHtml.addEventListener("click", () => {
+    if (!reciboModalAtual) return;
+    const html = `
+      <!doctype html>
+      <html>
+        <head><meta charset="utf-8"><title>Recibo ${reciboModalAtual.numero}</title></head>
+        <body>${gerarHtmlRecibo(reciboModalAtual)}</body>
+      </html>
+    `;
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `recibo-${reciboModalAtual.numero || 'recibo'}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  btnEnviarWhats.addEventListener("click", () => {
+    if (!reciboModalAtual) {
+      showMsg("Nenhum recibo selecionado.", "aviso");
+      return;
+    }
+    const phonePlus = normalizePhoneForWhats(reciboModalAtual.telefone || "");
+    if (!phonePlus) {
+      showMsg("Telefone ausente para este recibo.", "erro");
+      return;
+    }
+    const msg = `Olá ${reciboModalAtual.paciente}, segue o recibo nº ${reciboModalAtual.numero} referente a ${reciboModalAtual.servico}, valor ${formatCurrencyBR(reciboModalAtual.valor)}.`;
+    const url = whatsappUrl(phonePlus, msg);
+    window.open(url, "_blank");
+    showMsg("Abrindo WhatsApp...", "ok", 2000);
+  });
+
+  function abrirWhatsDirecto(r) {
+    const phonePlus = normalizePhoneForWhats(r.telefone || "");
+    if (!phonePlus) {
+      showMsg("Telefone ausente para este recibo.", "erro");
+      return;
+    }
+    const msg = `Olá ${r.paciente}, confirme o recebimento do recibo nº ${r.numero} (valor ${formatCurrencyBR(r.valor)}).`;
+    const url = whatsappUrl(phonePlus, msg);
+    window.open(url, "_blank");
+  }
+
+  // ====== EXPORT CSV ======
+  btnExportar.addEventListener("click", () => {
+    const texto = (filtros.texto || "").toLowerCase().trim();
+    const start = filtros.dataInicio || "";
+    const end = filtros.dataFim || "";
+    const filtered = recibos.filter(r => {
+      if (start && r.data < start) return false;
+      if (end && r.data > end) return false;
+      if (!texto) return true;
+      if ((r.paciente || "").toLowerCase().includes(texto)) return true;
+      if ((r.cpf || "").toLowerCase().includes(texto)) return true;
+      if ((r.servico || "").toLowerCase().includes(texto)) return true;
+      if (String(r.numero || "").toLowerCase().includes(texto)) return true;
+      return false;
+    });
+    exportCSV(filtered);
+  });
+
+  function exportCSV(rows) {
+    if (!rows.length) { showMsg("Nada para exportar.", "aviso"); return; }
+    const BOM = '\uFEFF';
+    const csv = rows.map(r =>
+      [r.data, r.paciente, r.cpf, r.servico, formatCurrencyBR(Number(r.valor || 0)), r.numero, r.telefone]
+      .map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')
+    ).join('\n');
+    const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'recibos.csv'; a.click();
+    URL.revokeObjectURL(url);
+    showMsg("CSV gerado.", "ok", 2500);
+  }
+
+  // ====== FILTROS / BUSCA ======
+  inputBuscaTexto.addEventListener("input", debounce((e) => {
+    filtros.texto = e.target.value;
+    aplicarFiltros();
+  }, 350));
+
+  btnFiltrar.addEventListener("click", () => {
+    filtros.dataInicio = inputDataInicio.value;
+    filtros.dataFim = inputDataFim.value;
+    aplicarFiltros();
+  });
+
+  btnLimpar.addEventListener("click", () => {
+    filtros = { texto: "", dataInicio: "", dataFim: "" };
+    inputBuscaTexto.value = "";
+    inputDataInicio.value = "";
+    inputDataFim.value = "";
+    aplicarFiltros();
+  });
+
+  btnRecarregar.addEventListener("click", () => {
+    iniciarEscutaRecibos();
+    showMsg("Recarregando...", "ok", 1500);
+  });
+
+  // ====== MASKS / UX ======
+  // Formatação leve do campo valor enquanto digita
+  inputValor.addEventListener("input", (e) => {
+    // permite números, vírgula e ponto; não faz máscara agressiva para não atrapalhar edição
+    e.target.value = e.target.value.replace(/[^\d\.,]/g, '');
+  });
+
+  inputCpf.addEventListener("input", (e) => {
+    // formata 000.000.000-00
+    const digits = e.target.value.replace(/\D/g,'').slice(0,11);
+    let formatted = digits;
+    if (digits.length > 9) formatted = digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+    else if (digits.length > 6) formatted = digits.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3");
+    else if (digits.length > 3) formatted = digits.replace(/(\d{3})(\d{1,3})/, "$1.$2");
+    e.target.value = formatted;
+  });
+
+  inputTelefone.addEventListener("input", (e) => {
+    e.target.value = e.target.value.replace(/\D/g,'').slice(0,13);
+  });
+
+  // ====== INIT / EVENTOS ======
+  form.addEventListener("submit", salvarRecibo);
+  btnCancelarEdicao.addEventListener("click", cancelarEdicao);
+
+  // iniciar escuta ao carregar a página
+  iniciarEscutaRecibos();
+
+  // ====== UTILIDADES ADICIONAIS ======
+  function excluirTodosPorTeste() {
+    // utilitário manual — NÃO chamá-lo em produção sem confirmação.
+  }
+
+  // Expor poucas funções para console (debug)
+  window._recibosApp = {
+    aplicarFiltros,
+    iniciarEscutaRecibos,
+    formatCurrencyBR,
+    parseCurrencyToNumber
+  };
+
+</script>
+</body>
+</html>
